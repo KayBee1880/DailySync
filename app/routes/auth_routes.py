@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, current_user, logout_user
 from models import User
@@ -6,8 +6,14 @@ from extensions import db
 
 auth_bp = Blueprint("auth", __name__)
 
-@auth_bp.route("/register",methods=['POST'])
+@auth_bp.route("/", methods=['GET'])
+def index():
+    return render_template("index.html")
+
+@auth_bp.route("/register",methods=['GET','POST'])
 def register():
+    if request.method == 'GET':
+        return render_template('register.html')
     data = request.json
     hashed_password = generate_password_hash(data["password"], method ="pbkdf2:sha256")
 
@@ -25,65 +31,52 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
-@habits_bp.route("/habits", methods=['GET'])
-@login_required
-def get_habits():
-    habits = Habit.query.filter_by(user_id=current_user.id).all()
-    return jsonify([{ "id": h.id, "name": h.name } for h in habits]), 200
 
-@habits_bp.route("/track-habit", methods=['POST'])
+settings_bp = Blueprint("settings", __name__)
+
+@settings_bp.route("/change_password", methods=['POST'])
 @login_required
-def track_habit():
+def change_password():
     data = request.json
-    new_habit = Habit(name=data["name"], user_id=current_user.id)
-    db.session.add(new_habit)
+    user = User.query.get(current_user.id)
+    
+    if not check_password_hash(user.password, data["current_password"]):
+        return jsonify({"error": "Current password is incorrect"}), 400
+    
+    if data["new_password"] != data["confirm_password"]:
+        return jsonify({"error": "New passwords don't match"}), 400
+    
+    user.password = generate_password_hash(data["new_password"], method="pbkdf2:sha256")
     db.session.commit()
-    return jsonify({"message": "Habit tracked successfully"}), 201
+    return jsonify({"message": "Password changed successfully"}), 200
 
-@habits_bp.route("/log-habit", methods=['POST'])
+@settings_bp.route("/change_username", methods=['POST'])
 @login_required
-def log_habit():
+def change_username():
     data = request.json
-    new_log = HabitLog(habit_id=data["habit_id"], user_id=current_user.id, completed=data["completed"])
-    db.session.add(new_log)
+    user = User.query.get(current_user.id)
+    
+    if User.query.filter_by(username=data["new_username"]).first():
+        return jsonify({"error": "Username already taken"}), 400
+    
+    user.username = data["new_username"]
     db.session.commit()
-    return jsonify({"message": "Habit log recorded"}), 201
+    return jsonify({"message": "Username changed successfully"}), 200
 
-@habits_bp.route("/progress", methods=['GET'])
+@settings_bp.route("/account_info", methods=['GET'])
 @login_required
-def get_progress():
-    logs = HabitLog.query.filter_by(user_id=current_user.id).all()
-    return jsonify([{ "habit_id": log.habit_id, "completed": log.completed, "date": log.date } for log in logs]), 200
+def account_info():
+    user = User.query.get(current_user.id)
+    return jsonify({
+        "username": user.username,
+        "joined_date": user.joined_date.strftime("%Y-%m-%d")  # assuming you have this field
+    }), 200
 
-@habits_bp.route("/set-goal", methods=['POST'])
+@settings_bp.route("/logout", methods=['POST'])
 @login_required
-def set_goal():
-    data = request.json
-    goal = Goal.query.filter_by(habit_id=data["habit_id"]).first()
-    if goal:
-        goal.target = data["target"]
-    else:
-        goal = Goal(habit_id=data["habit_id"], target=data["target"])
-        db.session.add(goal)
-    db.session.commit()
-    return jsonify({"message": "Goal set successfully"}), 201
-
-@habits_bp.route("/remove-habit/<int:habit_id>", methods=['DELETE'])
-@login_required
-def remove_habit(habit_id):
-    habit = Habit.query.filter_by(id=habit_id, user_id=current_user.id).first()
-    if habit:
-        db.session.delete(habit)
-        db.session.commit()
-        return jsonify({"message": "Habit removed"}), 200
-    return jsonify({"error": "Habit not found"}), 404
-
-@habits_bp.route("/report", methods=['GET'])
-@login_required
-def generate_report():
-    habits = Habit.query.filter_by(user_id=current_user.id).all()
-    report = {h.name: HabitLog.query.filter_by(habit_id=h.id).count() for h in habits}
-    return jsonify(report), 200
+def logout():
+    logout_user()
+    return jsonify({"message": "Logged out successfully"}), 200
 
 """
 /register , methods = [POST]

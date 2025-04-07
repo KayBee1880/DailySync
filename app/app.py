@@ -2,6 +2,10 @@ from flask import Flask, Blueprint
 from dotenv import load_dotenv
 import os
 from extensions import db, migrate, login_manager, bcrypt
+from routes.auth_routes import auth_bp
+from routes.habit_routes import habits_bp
+from routes.settings_routes import settings_bp
+from models import User
 
 '''This is where we will create the actual app and define its configurations,
 also register blueprints for routes we define in the routes folder
@@ -28,8 +32,14 @@ migrate.init_app(app,db)
 login_manager.init_app(app)
 bcrypt.init_app(app)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 #register blueprints from routes folder
+app.register_blueprint(auth_bp)
+app.register_blueprint(habits_bp, url_prefix='/habits')
+app.register_blueprint(settings_bp, url_prefix='/settings')
 
 
 with app.app_context():
