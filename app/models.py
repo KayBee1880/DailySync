@@ -9,6 +9,7 @@ class User(db.Model, UserMixin):
     password= db.Column(db.String(255),nullable=False)
     email= db.Column(db.String(255),unique=True,nullable=False)
     profile_picture= db.Column(db.String(255),nullable=True)
+    date_joined = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f'<User: {self.username} Email: {self.email}>'

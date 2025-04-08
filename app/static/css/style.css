@@ -1,9 +1,4 @@
-body {
-    font-family: Arial, sans-serif;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-}
+
 .settings-section {
     margin-bottom: 30px;
     padding: 20px;
@@ -33,3 +28,99 @@ input {
 .success {
     color: green;
 }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    background-color: #f7f8fa;
+  }
+
+  .sidebar {
+    width: 240px;
+    background-color: #009dc4;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile {
+    background-color: #b9d8e4;
+    border-radius: 10px;
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .profile-icon {
+    background-color: #fff;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  .nav-item {
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 40px;
+  }
+
+  .header {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .calendar-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .calendar-controls span {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 120px repeat(7, 1fr);
+    gap: 10px;
+    align-items: center;
+  }
+
+  .grid div {
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+  }
+
+  .habit-label {
+    font-weight: bold;
+    text-align: left;
+  }
+
+  .purple { background-color: #cc6ce7; }
+  .orange { background-color: #ffa74f; }
+  .blue { background-color: #26c6da; }
+  .red { background-color: #f44336; }
+  .green { background-color: #4caf50; }
+  .gray { background-color: #ccc; }

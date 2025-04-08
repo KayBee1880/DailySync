@@ -3,6 +3,7 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+    <a href="{{ url_for('test.test_page') }}">Dashboard</a>
     <a href="{{ url_for('auth.register') }}">Register</a>
     <a href="{{ url_for('settings.user_settings') }}">Settings</a>
 {% endblock %}

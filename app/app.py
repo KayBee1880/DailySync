@@ -5,6 +5,7 @@ from extensions import db, migrate, login_manager, bcrypt
 from routes.auth_routes import auth_bp
 from routes.habit_routes import habits_bp
 from routes.settings_routes import settings_bp
+from routes.test_routes import test_bp
 from models import User
 
 '''This is where we will create the actual app and define its configurations,
@@ -40,6 +41,9 @@ def load_user(user_id):
 app.register_blueprint(auth_bp)
 app.register_blueprint(habits_bp, url_prefix='/habits')
 app.register_blueprint(settings_bp, url_prefix='/settings')
+
+#test routes for debugging purposes
+app.register_blueprint(test_bp, url_prefix="/test")
 
 
 with app.app_context():

@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, current_user, logout_user
 from models import User
-from extensions import db
+from extensions import db, bcrypt
+from support import validate_password
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -12,67 +13,64 @@ def index():
 
 @auth_bp.route("/register",methods=['GET','POST'])
 def register():
-    if request.method == 'GET':
-        return render_template('register.html')
-    data = request.json
-    hashed_password = generate_password_hash(data["password"], method ="pbkdf2:sha256")
+    try:
+        if request.method == 'GET':
+            return render_template('register.html')
+        
+        username = request.form.get('username')
+        password1 = request.form.get('password1')
+        password2 = request.form.get('password2') 
+        email = request.form.get('email')
+        id = request.form.get("id")
 
-    new_user = User(username=data["username"],password = hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({"message":"User registered successfully"}),201
+        if not username or not password1 or not password2 or not email: #check if all fields are filled in form
+            flash('All fields are required','warning')
+            return redirect(url_for('auth.register'))
+        
+        valid, message, category = validate_password(password1,password2) 
+        if not valid and message: #validate password
+            flash(message,category)
+            return redirect(url_for('auth.register'))
+        password = password1
 
-@auth_bp.route("/login", methods=['POST'])
+        if User.query.filter_by(username=username).first(): #check if user already exists in User table
+            flash('This username already exists!','error')
+            return redirect(url_for('auth.register'))
+        
+        if username and password:
+
+            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+
+            new_user = User(id=id,username=username,password = hashed_password, email=email)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('User account created successfully','success')
+            return redirect(url_for('auth.login'))
+            #return jsonify({"message":"User registered successfully"}),201
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error registering user: {e}','error')
+        return redirect(url_for('auth.register'))
+
+@auth_bp.route("/login", methods=['GET','POST'])
 def login():
-    data = request.json
-    user = User.query.filter_by(username=data["username"]).first()
-    if user and check_password_hash(user.password, data["password"]):
-        login_user(user)
-        return jsonify({"message": "Login successful"}), 200
-    return jsonify({"error": "Invalid credentials"}), 401
+    try:
+        if request.method == 'GET':
+            return render_template('login.html')
+        elif request.method == 'POST':
+            user = User.query.filter_by(username=request.form.get('username')).first()
+            if user and bcrypt.check_password_hash(user.password,request.form.get('password')):
+                login_user(user)
+                flash(f'User {user.id} successfully logged in','success')
+                return render_template('dashboard-2.html')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error logging in user: {e}','error')
+        return redirect(url_for('auth.login'))
 
 
-settings_bp = Blueprint("settings", __name__)
 
-@settings_bp.route("/change_password", methods=['POST'])
-@login_required
-def change_password():
-    data = request.json
-    user = User.query.get(current_user.id)
-    
-    if not check_password_hash(user.password, data["current_password"]):
-        return jsonify({"error": "Current password is incorrect"}), 400
-    
-    if data["new_password"] != data["confirm_password"]:
-        return jsonify({"error": "New passwords don't match"}), 400
-    
-    user.password = generate_password_hash(data["new_password"], method="pbkdf2:sha256")
-    db.session.commit()
-    return jsonify({"message": "Password changed successfully"}), 200
-
-@settings_bp.route("/change_username", methods=['POST'])
-@login_required
-def change_username():
-    data = request.json
-    user = User.query.get(current_user.id)
-    
-    if User.query.filter_by(username=data["new_username"]).first():
-        return jsonify({"error": "Username already taken"}), 400
-    
-    user.username = data["new_username"]
-    db.session.commit()
-    return jsonify({"message": "Username changed successfully"}), 200
-
-@settings_bp.route("/account_info", methods=['GET'])
-@login_required
-def account_info():
-    user = User.query.get(current_user.id)
-    return jsonify({
-        "username": user.username,
-        "joined_date": user.joined_date.strftime("%Y-%m-%d")  # assuming you have this field
-    }), 200
-
-@settings_bp.route("/logout", methods=['POST'])
+@auth_bp.route("/logout", methods=['POST'])
 @login_required
 def logout():
     logout_user()

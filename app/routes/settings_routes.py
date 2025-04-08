@@ -49,8 +49,3 @@ def account_info():
         "joined_date": user.joined_date.strftime("%Y-%m-%d")  # assuming you have this field
     }), 200
 
-@settings_bp.route("/logout", methods=['POST'])
-@login_required
-def logout():
-    logout_user()
-    return jsonify({"message": "Logged out successfully"}), 200
