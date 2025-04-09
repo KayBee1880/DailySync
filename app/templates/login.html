@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Lifestyle App | Login Page{% endblock %}
-
+<link rel="stylesheet" type="text/css" href="/css/style.css">
 {% block content %}
     <h1>LOGIN</h1>
     <form method="POST" action="{{ url_for('auth.login') }}" enctype="multipart/form-data">

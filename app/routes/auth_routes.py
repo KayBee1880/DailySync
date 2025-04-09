@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, current_user, logout_user
-from models import User
+from models import User, Habit, TrackedHabit
 from extensions import db, bcrypt
-from support import validate_password
+from support import validate_password, get_week_range
+from datetime import datetime
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -61,20 +62,46 @@ def login():
             user = User.query.filter_by(username=request.form.get('username')).first()
             if user and bcrypt.check_password_hash(user.password,request.form.get('password')):
                 login_user(user)
-                flash(f'User {user.id} successfully logged in','success')
-                return render_template('dashboard-2.html')
+                flash(f'User {user.username} successfully logged in','success')
+                return redirect(url_for('auth.dashboard'))
+            else:
+                flash('Invalid username or password','error')
+                return redirect(url_for('auth.login'))
     except Exception as e:
         db.session.rollback()
         flash(f'Error logging in user: {e}','error')
         return redirect(url_for('auth.login'))
 
+@auth_bp.route("/user-dashboard",methods=['GET','POST'])
+@login_required
+def dashboard():
+    try:
+        today = datetime.today()
+        week_range = get_week_range()
+        user = current_user
+        for habit in user.tracked_habits:
+            habit_completed = habit.last_completed == today
+            habit.completed_today = habit_completed
 
+        if request.method == 'GET':
+            return render_template('dashboard-2.html',user=current_user,habits=user.tracked_habits,
+                                    all_habits = Habit.query.all(),today_date = today, week_range=week_range)
+        elif request.method == 'POST':
+                return redirect(url_for('auth.dashboard'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'error encountered: {e}','error')
+        return redirect(url_for('auth.login'))
 
 @auth_bp.route("/logout", methods=['POST'])
 @login_required
 def logout():
     logout_user()
     return jsonify({"message": "Logged out successfully"}), 200
+
+
+
 
 """
 /register , methods = [POST]
