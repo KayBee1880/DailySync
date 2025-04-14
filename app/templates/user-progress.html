@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Lifestyle App | Dashboard{% endblock %}
+{% block title %}Lifestyle App | Progress{% endblock %}
 {% block content %}
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit Tracker</title>
     <link rel="stylesheet" type="text/css" href="/css/style.css">
 
   </head>
@@ -98,56 +97,19 @@
     <br>
 
     <div class="today-panel">
-      <h3>Today, {{ today_date | format_date }}</h3>
-      {% for habit in habits %}
-        {% if habit.completed_today %}
+      <h3>Feedback</h3>
+      {% if comments %}
+        {% for comment in comments %}
 
-            <div class="habit-card completed" style="background-color: #D67EFF;">
-              <div class="habit-header">
-                <span>{{ habit.habit_name }}</span>
-                {% if habit.streak < 2 %}
-                  <span class="streak">{{ habit.streak }}</span>
-                {% else %}
-                  <span class="streak">🔥 {{ habit.streak }}</span>
-                {% endif %}
-              </div>
-              <p>✔️ Completed</p>
-            </div>
-        {% else %}
             <div class="habit-card">
-              <span>{{ habit.habit_name }}</span>
-              <button class="mark-btn" data-habit-id="{{ habit.id }}">Mark Complete</button>
+              <div class="habit-header">
+                <p>{{ comment }}</p>
+              </div>
             </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        // Open and close modal functions
-        function openModal() {
-            document.getElementById('addHabitModal').style.display = 'block';  // Show the modal
-        }
-    
-        function closeModal() {
-            document.getElementById('addHabitModal').style.display = 'none';   // Hide the modal
-        }
-    
-        // Add event listener to the open modal button
-        const openModalBtn = document.querySelector('.add-habit-button');
-        if (openModalBtn) {
-            openModalBtn.addEventListener('click', openModal);
-        }
-    
-        // Add event listener to the close modal button
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', closeModal);
-        }
-      });
-    </script>
-    
-
-    
+        {% endfor %}
+      {% else %}
+        <p>No Feedback</p>
+      {% endif %}
+    </div>   
   </body>
 {% endblock %}

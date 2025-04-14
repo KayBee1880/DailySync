@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from models import Habit, TrackedHabit, HabitLog, Goal
 from extensions import db
 from datetime import datetime
+from support import get_weekly_logs
 
 habits_bp = Blueprint('habits', __name__)
 
@@ -29,6 +30,7 @@ def add_habit():
 
         new_goal = Goal(user_id=current_user.id, tracked_habit_id=new_tracked_habit.id,
                         goal_freq=goal_freq, goal_type=goal_type)
+        print('New goal',new_goal)
         db.session.add(new_goal)
         db.session.commit()
 
@@ -47,14 +49,13 @@ def get_habits():
     return jsonify([{"id": h.id, "name": h.name} for h in habits]), 200
 
 
-@habits_bp.route("/track-habit", methods=['POST'])
+@habits_bp.route("/delete", methods=['DELETE'])
 @login_required
-def track_habit():
-    data = request.json
-    new_habit = Habit(name=data["name"], user_id=current_user.id)
-    db.session.add(new_habit)
-    db.session.commit()
-    return jsonify({"message": "Habit tracked successfully"}), 201
+def delete_habit():
+    flash('Message deleted successfully','success')
+    return redirect(url_for('dashboard'))
+
+
 
 
 @habits_bp.route("/log-habit", methods=['POST'])
@@ -67,16 +68,9 @@ def log_habit():
     return jsonify({"message": "Habit log recorded"}), 201
 
 
-@habits_bp.route("/progress", methods=['GET'])
-@login_required
-def get_progress():
-    logs = HabitLog.query.filter_by(user_id=current_user.id).all()
-    return jsonify([{"habit_id": log.habit_id, "completed": log.completed, "date": log.date} for log in logs]), 200
-
-
 @habits_bp.route("/set-goal", methods=['POST'])
 @login_required
-def set_goal():
+def change_goal():
     data = request.json
     goal = Goal.query.filter_by(tracked_habit_id=data["tracked_habit_id"]).first()
     if goal:
@@ -102,7 +96,7 @@ def remove_habit(habit_id):
 @habits_bp.route("/rename-habit/<int:habit_id>", methods=['PUT'])
 @login_required
 def rename_habit(habit_id):
-    data = request.json
+    data = request.form
     new_name = data.get("new_name")
 
     if not new_name:
@@ -149,3 +143,24 @@ def generate_report():
     habits = Habit.query.filter_by(user_id=current_user.id).all()
     report = {h.name: HabitLog.query.filter_by(habit_id=h.id).count() for h in habits}
     return jsonify(report), 200
+
+@habits_bp.route("/progress", methods = ['GET'])
+@login_required
+def user_progress():
+    feedback = ["First comment","Second comment"]
+    for habit in current_user.tracked_habits:
+        print(habit.habit_name)
+        print(habit.goal)
+        #current_week, last_week = get_weekly_logs(habit.id)
+        current_week, last_week = 2,1
+        percent_change = abs(round(((current_week - last_week)/last_week) * 100))
+        if current_week > last_week:
+            feedback.append(f'Congrats! Your commitment to your {habit.habit_name} habit is up {percent_change}% this week')
+        elif current_week < last_week:
+            feedback.append(f'Your {habit.habit_name} logs was down {percent_change}% this week. Consider lowering your goal \
+                             to a more comfortable frequency then progressively increase.')
+        
+        if habit.goal.goal_freq == current_week:
+            feedback.append(f'Congrats! You fulfilled your commitment to your {habit.habit_name} habit this week')
+            
+    return render_template('user-progress.html', comments = feedback, user=current_user, habits = TrackedHabit.query.all())

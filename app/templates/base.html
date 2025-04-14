@@ -7,24 +7,25 @@
     <link rel="stylesheet" type="text/css" href="/css/style.css">
 
 </head>
-<body>
-    {% block content %}{% endblock %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    <body>
+        {% block content %}{% endblock %}
+        <script src="/js/bootstrap.js"></script>
+        {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="flashed-messages">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} flash-message">
-                        {{ message }}
-                    </div> 
-                {% endfor %}
+            <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} flash-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
             </div>
         {% endif %}
-    {% endwith %}
-    <script>
-        setTimeout(function() {
-            let messages = document.querySelectorAll('.flash-message');
-            messages.forEach((msg) => msg.classList.add('fade'));
-        }, 3000);
-    </script>
-</body>
+        {% endwith %}
+        <script>
+            setTimeout(function() {
+                let messages = document.querySelectorAll('.flash-message');
+                messages.forEach((msg) => msg.classList.add('fade'));
+            }, 3000);
+        </script>
+    </body>
 </html>
