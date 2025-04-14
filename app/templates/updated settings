@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <div class="user-info">
+                <span id="user-name"></span>
+                <span id="user-email"></span>
+            </div>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="dashboard.html">Progress</a></li>
+                    <li><a href="habits.html">Manage Habits</a></li>
+                    <li><a href="settings.html" class="active">Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <main class="settings-main">
+            <h1>Account Settings</h1>
+            
+            <div class="settings-section">
+                <h2>Account Information</h2>
+                <form id="account-form">
+                    <div class="form-group">
+                        <label for="settings-name">Name</label>
+                        <input type="text" id="settings-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-email">Email</label>
+                        <input type="email" id="settings-email" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Update Account</button>
+                </form>
+            </div>
+            
+            <div class="settings-section">
+                <h2>Change Password</h2>
+                <form id="password-form">
+                    <div class="form-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm New Password</label>
+                        <input type="password" id="confirm-password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Change Password</button>
+                </form>
+            </div>
+            
+            <div class="settings-section danger-zone">
+                <h2>Danger Zone</h2>
+                
+                <div class="danger-option">
+                    <h3>Reset All Progress</h3>
+                    <p>This will erase all your habit data but keep your account.</p>
+                    <button id="reset-progress-btn" class="btn-danger">Reset Progress</button>
+                </div>
+                
+                <div class="danger-option">
+                    <h3>Delete Account</h3>
+                    <p>This will permanently delete your account and all data.</p>
+                    <button id="delete-account-btn" class="btn-danger">Delete Account</button>
+                </div>
+            </div>
+
+            <div class="danger-option">
+                <h3>Logout</h3>
+                <p>Sign out of your account (you can sign back in later)</p>
+                <button onclick="logout()" class="btn-danger">Logout</button>
+            </div>
+        </main>
+    </div>
+    
+    <script src="js/settings.js"></script>
+</body>
+</html>
