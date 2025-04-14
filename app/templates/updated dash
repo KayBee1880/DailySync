@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <div class="user-info">
+                <span id="user-name"></span>
+                <span id="user-email"></span>
+            </div>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="active">Progress</a></li>
+                    <li><a href="habits.html">Manage Habits</a></li>
+                    <li><a href="settings.html">Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <main class="dashboard-main">
+            <div class="welcome-message">
+                <h1 id="welcome-text"></h1>
+            </div>
+            
+            <div class="time-period-selector">
+                <button class="time-period-btn active">Week</button>
+                <button class="time-period-btn">Month</button>
+                <button class="time-period-btn">Year</button>
+                <button class="time-period-btn">All Time</button>
+            </div>
+            
+            <div class="current-period">
+                <span id="current-period-range"></span>
+            </div>
+            
+            <div class="habit-grid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+            
+            <div class="today-habits">
+                <h2>Today's Habits</h2>
+                <div class="today-list">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
