@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Your Habits</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <div class="user-info">
+                <span id="user-name"></span>
+                <span id="user-email"></span>
+            </div>
+        </header>
+        
+        <main class="setup-container">
+            <h1>Let's Get Started</h1>
+            <p>What habits would you like to track?</p>
+            
+            <div class="habit-selection">
+                <div class="habit-option">
+                    <input type="checkbox" id="habit-reading" value="Reading">
+                    <label for="habit-reading">Reading</label>
+                </div>
+                
+                <div class="habit-option">
+                    <input type="checkbox" id="habit-sleep" value="Sleep">
+                    <label for="habit-sleep">Sleep</label>
+                </div>
+                
+                <div class="habit-option">
+                    <input type="checkbox" id="habit-workout" value="Workout">
+                    <label for="habit-workout">Workout</label>
+                </div>
+                
+                <div class="habit-option">
+                    <input type="checkbox" id="habit-diet" value="Diet/Nutrition">
+                    <label for="habit-diet">Diet/Nutrition</label>
+                </div>
+                
+                <div class="habit-option">
+                    <input type="checkbox" id="habit-gaming" value="Gaming">
+                    <label for="habit-gaming">Gaming</label>
+                </div>
+                
+                <div class="custom-habit">
+                    <input type="text" id="custom-habit-input" placeholder="Add your own habit">
+                    <button id="add-custom-habit">Add</button>
+                </div>
+            </div>
+            
+            <div class="frequency-selection">
+                <h2>How often do you want to track these habits?</h2>
+                <select id="tracking-frequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            
+            <button id="complete-setup" class="btn-primary">Complete Setup</button>
+        </main>
+    </div>
+    
+    <script src="js/setup.js"></script>
+</body>
+</html>
