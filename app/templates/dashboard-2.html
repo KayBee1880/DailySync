@@ -5,20 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habit Tracker</title>
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
-
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/style.css') }}">
   </head>
   <body>
     <div class="sidebar">
-      <div class="profile">
-        <div class="profile-icon"></div>
-        <div>{{ user.username }}</div>
-        <div style="font-size: 12px; color: #555">{{ user.email }}</div>
-      </div>
+      <a href="{{ url_for('auth.dashboard') }}" class="profile-link">
+        <div class="profile">
+          <div class="profile-icon"></div>
+          <div>{{ user.username }}</div>
+          <div style="font-size: 12px; color: #555">{{ user.email }}</div>
+        </div>
+      </a>
       <div class="nav">
         <a class="nav-item"  href="{{ url_for('habits.user_progress') }}" >📊 Progress</a>
-        <a class="nav-item" href="#">📋 Manage Habits</a>
-        <a class="nav-item" href="#">⚙️ Settings</a>
+        <a class="nav-item" href="{{ url_for('habits.get_habits') }}">📋 Manage Habits</a>
+        <a class="nav-item" href="{{ url_for('settings.user_settings') }}">⚙️ Settings</a>
         <a class="nav-item" href="{{ url_for('auth.logout') }}">Logout</a>
       </div>
     </div>
@@ -26,42 +27,48 @@
       <div class="header">Welcome back {{ user.username }}</div>
 
       <div class="calendar-controls">
-        <button>&lt;</button>
+        <a href="{{ url_for('auth.dashboard', week_offset=week_offset - 1) }}">
+          <button>&lt;</button>
+        </a>
         <span>{{ week_range }}</span>
-        <button>&gt;</button>
+        {% if week_offset < 0 %}
+          <a href="{{ url_for('auth.dashboard', week_offset=week_offset + 1) }}">
+            <button>&gt;</button>
+          </a>
+        {% else %}
+          <button disabled style="opacity: 0.5; cursor: not-allowed;">&gt;</button>
+        {% endif %}
       </div>
-      <table class="habits-table">
-          <thead>
-              <tr>
-                  <th>Habits</th>
-                  <th>Sun</th>
-                  <th>Mon</th>
-                  <th>Tue</th>
-                  <th>Wed</th>
-                  <th>Thu</th>
-                  <th>Fri</th>
-                  <th>Sat</th>
-              </tr>
-          </thead>
-      
-          <tbody>
-            {% if habits %}
-                {% for habit in habits %}
-                  <tr>
-                      <td><div class="habit-label">{{ habit.habit_name }}</div></td>
-                      <td><div class="habit-cell" data-day="sun"></div></td>
-                      <td><div class="habit-cell" data-day="mon"></div></td>
-                      <td><div class="habit-cell" data-day="tue"></div></td>
-                      <td><div class="habit-cell" data-day="wed"></div></td>
-                      <td><div class="habit-cell" data-day="thu"></div></td>
-                      <td><div class="habit-cell" data-day="fri"></div></td>
-                      <td><div class="habit-cell" data-day="sat"></div></td>
-                  </tr>
-                  {% endfor %}
-            {% endif %}
-              </tbody>
-          </table>
-          <button class="add-habit-button" onclick="openModal()" type="button">Add Habit</button>
+      <div class="habits-table-container">
+        <table class="habits-table">
+            <thead>
+                <tr>
+                    <th>Habits</th>
+                    {% for date in week_dates %}
+                      <th>{{ date.strftime('%a') }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+        
+            <tbody>
+              {% if habits %}
+                  {% for habit in habits %}
+                    <tr>
+                        <td><div class="habit-label">{{ habit.habit_name }}</div></td>
+                        {% for date in week_dates %}
+                          {% set date_str = date.date().isoformat() %}
+                          {% set completed = date_str in logs_by_habit[habit.id] %} 
+                            <td>
+                              <div class="habit-cell {% if completed %}completed{% endif %}"></div>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+              {% endif %}
+                </tbody>
+            </table>
+          </div>
+          <button class="add-habit-button" type="button">+ Add Habit</button>
 
         </div>
       
@@ -94,21 +101,20 @@
       </form>
     </div>
   </div>
-        </div>
     <br>
 
     <div class="today-panel">
       <h3>Today, {{ today_date | format_date }}</h3>
       {% for habit in habits %}
-        {% if habit.completed_today %}
+        {% if habit.id in logged_today %}
 
             <div class="habit-card completed" style="background-color: #D67EFF;">
               <div class="habit-header">
                 <span>{{ habit.habit_name }}</span>
-                {% if habit.streak < 2 %}
+                {% if habit.streak <= 2 %}
                   <span class="streak">{{ habit.streak }}</span>
                 {% else %}
-                  <span class="streak">🔥 {{ habit.streak }}</span>
+                  <span class="streak">{{ habit.streak }} 🔥</span>
                 {% endif %}
               </div>
               <p>✔️ Completed</p>
@@ -116,7 +122,10 @@
         {% else %}
             <div class="habit-card">
               <span>{{ habit.habit_name }}</span>
-              <button class="mark-btn" data-habit-id="{{ habit.id }}">Mark Complete</button>
+              <form method="POST" action="{{ url_for('habits.log_habit') }}">
+                <input type="hidden" name="habit_id" value="{{ habit.id }}">
+                <button class="mark-btn" type="submit">Mark Complete</button>
+              </form>
             </div>
         {% endif %}
       {% endfor %}

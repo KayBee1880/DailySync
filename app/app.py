@@ -30,8 +30,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'connect_args': {'options': '-csearch_path=public'}
 }
-#csrf = CSRFProtect(app)
-
 
 #initialize entension objects with app
 db.init_app(app)

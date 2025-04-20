@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Habits</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/updated-styles.css') }}">
 </head>
 <body>
     <div class="app-container">
@@ -15,9 +15,9 @@
                 <span id="user-email"></span>
             </div>
             <nav class="nav">
-                <a href="dashboard.html" class="nav-item">Progress</a>
-                <a href="habits.html" class="nav-item active">Manage Habits</a>
-                <a href="settings.html" class="nav-item">Settings</a>
+                <a href="{{ url_for('habits.user_progress') }}" class="nav-item">Progress</a>
+                <a href="#" class="nav-item active">Manage Habits</a>
+                <a href="{{ url_for('test.test_settings') }}" class="nav-item">Settings</a>
             </nav>
         </div>
         
@@ -35,7 +35,10 @@
             </div>
         </main>
     </div>
+    <script>
+        const IndexUrl = "{{ url_for('auth.index') }}"
+    </script>
     
-    <script src="js/habits.js"></script>
+    <script src="{{ url_for('static', filename='js/habits.js') }}"></script>
 </body>
 </html>

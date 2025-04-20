@@ -5,61 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   </head>
   <body>
     <div class="sidebar">
-      <div class="profile">
-        <div class="profile-icon"></div>
-        <div>{{ user.username }}</div>
-        <div style="font-size: 12px; color: #555">{{ user.email }}</div>
-      </div>
+      <a href="{{ url_for('auth.dashboard') }}" class="profile-link">
+        <div class="profile">
+          <div class="profile-icon"></div>
+          <div>{{ user.username }}</div>
+          <div style="font-size: 12px; color: #555">{{ user.email }}</div>
+        </div>
+      </a>
       <div class="nav">
         <a class="nav-item"  href="{{ url_for('habits.user_progress') }}" >📊 Progress</a>
-        <a class="nav-item" href="#">📋 Manage Habits</a>
-        <a class="nav-item" href="#">⚙️ Settings</a>
+        <a class="nav-item" href="{{ url_for('habits.get_habits') }}">📋 Manage Habits</a>
+        <a class="nav-item" href="{{ url_for('settings.user_settings') }}">⚙️ Settings</a>
         <a class="nav-item" href="{{ url_for('auth.logout') }}">Logout</a>
       </div>
     </div>
     <div class="main-content">
-      <div class="header">Welcome back {{ user.username }}</div>
-
-      <div class="calendar-controls">
-        <button>&lt;</button>
-        <span>{{ week_range }}</span>
-        <button>&gt;</button>
-      </div>
-      <table class="habits-table">
-          <thead>
-              <tr>
-                  <th>Habits</th>
-                  <th>Sun</th>
-                  <th>Mon</th>
-                  <th>Tue</th>
-                  <th>Wed</th>
-                  <th>Thu</th>
-                  <th>Fri</th>
-                  <th>Sat</th>
-              </tr>
-          </thead>
-      
-          <tbody>
-            {% if habits %}
-                {% for habit in habits %}
-                  <tr>
-                      <td><div class="habit-label">{{ habit.habit_name }}</div></td>
-                      <td><div class="habit-cell" data-day="sun"></div></td>
-                      <td><div class="habit-cell" data-day="mon"></div></td>
-                      <td><div class="habit-cell" data-day="tue"></div></td>
-                      <td><div class="habit-cell" data-day="wed"></div></td>
-                      <td><div class="habit-cell" data-day="thu"></div></td>
-                      <td><div class="habit-cell" data-day="fri"></div></td>
-                      <td><div class="habit-cell" data-day="sat"></div></td>
-                  </tr>
-                  {% endfor %}
-            {% endif %}
-              </tbody>
-          </table>
+      <div class="header">{{ user.username }}'s Progress</div>
+          
+          <div style="max-width: 700px; margin: 0 auto;">
+            <canvas id="habitChart" width="600" height="400"></canvas>
+          </div>
           <button class="add-habit-button" onclick="openModal()" type="button">Add Habit</button>
 
         </div>
@@ -110,6 +80,49 @@
       {% else %}
         <p>No Feedback</p>
       {% endif %}
-    </div>   
+    </div> 
+    <script>
+        const ctx = document.getElementById('habitChart').getContext('2d');
+      
+        const currentWeekData = [3, 2, 4, 1, 5, 0, 2];
+        const previousWeekData = [2, 1, 3, 2, 2, 0, 1];
+      
+        const habitChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            datasets: [
+              {
+                label: 'This Week',
+                data: currentWeekData,
+                backgroundColor: 'rgba(75, 192, 192, 0.7)'
+              },
+              {
+                label: 'Last Week',
+                data: previousWeekData,
+                backgroundColor: 'rgba(153, 102, 255, 0.7)'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Habit Logs: This Week vs Last Week'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0,
+                  stepSize: 1
+                }
+              }
+            }
+          }
+        });
+    </script>
   </body>
 {% endblock %}

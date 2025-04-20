@@ -9,7 +9,8 @@ def seed_habits():
         {"name":"Exercise","description": "Hit the gym and burn some calories","category": "Fitness"},
         {"name":"Study","description": "Have a focused study session","category": "Mind"},
         {"name":"Meditate","description": "Some quiet time","category": "Mind"},
-        {"name":"Jogging","description": "Jog your system with some running","category": "Fitness"}
+        {"name":"Jogging","description": "Jog your system with some running","category": "Fitness"},
+        {"name":"Custom","description":"Any of your choosing","category":"Custom"}
     ]
 
     for habit in habits: #add habits to db if not already added

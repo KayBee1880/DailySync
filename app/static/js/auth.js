@@ -39,7 +39,7 @@ if (loginForm) {
     });
 }
 
-// Signup functionality
+/* Signup functionality
 const signupForm = document.getElementById('signup-form');
 if (signupForm) {
     signupForm.addEventListener('submit', (e) => {
@@ -91,6 +91,30 @@ if (signupForm) {
 // Logout functionality (used in settings.js)
 function logout() {
     localStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
-}
+    window.location.href = 'index.html'; 
+}*/
+
+
+document.addEventListener("DOMContentLoaded", function() {
+  // Open and close modal functions
+  function openModal() {
+      document.getElementById('addHabitModal').style.display = 'block';  // Show the modal
+  }
+
+  function closeModal() {
+      document.getElementById('addHabitModal').style.display = 'none';   // Hide the modal
+  }
+
+  // Add event listener to the open modal button
+  const openModalBtn = document.querySelector('.add-habit-button');
+  if (openModalBtn) {
+      openModalBtn.addEventListener('click', openModal);
+  }
+
+  // Add event listener to the close modal button
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', closeModal);
+  }
+});
 

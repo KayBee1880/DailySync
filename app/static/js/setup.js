@@ -62,22 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get tracking frequency
         const trackingFrequency = document.getElementById('tracking-frequency').value;
         
-        // Update current user with habits
-        const users = JSON.parse(localStorage.getItem('users'));
-        const userIndex = users.findIndex(u => u.id === currentUser.id);
-        
-        currentUser.habits = selectedHabits.map(habitName => ({
-            id: `habit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            name: habitName,
-            frequency: trackingFrequency,
-            completions: []
-        }));
-        
-        // Update localStorage
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        users[userIndex] = currentUser;
-        localStorage.setItem('users', JSON.stringify(users));
-        
         // Redirect to dashboard
         window.location.href = 'dashboard.html';
     });

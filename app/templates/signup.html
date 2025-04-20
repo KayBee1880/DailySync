@@ -1,48 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit Tracker - Sign Up</title>
-    <link rel="stylesheet" href="css/auth.css">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Lifestyle App | SignUp {% endblock %}
+
+
+{% block content %}
     <div class="auth-container">
         <div class="auth-header">
             <h1>Habit Tracker</h1>
             <p>Get started with building better habits</p>
         </div>
         
-        <form id="signup-form" class="auth-form">
+        <form id="signup-form" class="auth-form" action="{{ url_for('auth.register') }}" method="POST" enctype="multipart/form-data">
             <h2>Create Account</h2>
             <div class="form-group">
-                <label for="signup-name">Name</label>
-                <input type="text" id="signup-name" required>
+                <label for="username">Name</label>
+                <input type="text" id="username" name="username" required>
             </div>
             
             <div class="form-group">
-                <label for="signup-email">Email</label>
-                <input type="email" id="signup-email" required>
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
             </div>
             
             <div class="form-group">
-                <label for="signup-password">Password</label>
-                <input type="password" id="signup-password" required>
+                <label for="password1">Password</label>
+                <input type="password" id="password1" name="password1" required>
             </div>
             
             <div class="form-group">
-                <label for="signup-confirm">Confirm Password</label>
-                <input type="password" id="signup-confirm" required>
+                <label for="password2">Confirm Password</label>
+                <input type="password" id="password2" name="password2" required>
             </div>
             
             <button type="submit" class="auth-btn">Create Account</button>
             
             <div class="auth-footer">
-                <p>Already have an account? <a href="index.html">Login</a></p>
+                <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
             </div>
         </form>
     </div>
-    
-    <script src="js/auth.js"></script>
-</body>
-</html>
+{% endblock %}

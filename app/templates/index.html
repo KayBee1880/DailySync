@@ -3,7 +3,46 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    <a href="{{ url_for('test.test_page') }}">Dashboard</a><br>
-    <a href="{{ url_for('auth.register') }}">Register</a><br>
-    <a href="{{ url_for('settings.user_settings') }}">Settings</a><br>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Habit Tracker</h1>
+            <p>Build better habits, one day at a time</p>
+        </div>
+        
+        <form id="login-form" class="auth-form">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            
+            <button type="submit" class="auth-btn">Login</button>
+            
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a></p>
+            </div>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <!--
+    <a href="{{ url_for('test.test_page') }}">Dashboard</a>
+    <br>
+    <a href="{{ url_for('auth.register') }}">Register</a>
+    <br>
+    <a href="{{ url_for('settings.user_settings') }}">Settings</a>
+    <br>
+    <a href="{{ url_for('test.test_habits') }}">Habits</a>
+    <br>
+    <a href="{{ url_for('test.test_signup') }}">Signup</a>
+    <br>
+    <a href="{{ url_for('test.test_setup') }}">Setup</a>
+    <br>
+    <a href="{{ url_for('test.test_settings') }}">Settings</a>
+    <br>-->
 {% endblock %}

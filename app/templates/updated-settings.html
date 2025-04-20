@@ -4,25 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Settings</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/updated-styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <header class="app-header">
-            <div class="user-info">
-                <span id="user-name"></span>
-                <span id="user-email"></span>
+    <div class="sidebar">
+        <a href="{{ url_for('auth.dashboard') }}" class="profile-link">
+            <div class="profile">
+              <div class="profile-icon"></div>
+              <div>{{ user.username }}</div>
+              <div style="font-size: 12px; color: #555">{{ user.email }}</div>
             </div>
-            
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="dashboard.html">Progress</a></li>
-                    <li><a href="habits.html">Manage Habits</a></li>
-                    <li><a href="settings.html" class="active">Settings</a></li>
-                </ul>
-            </nav>
-        </header>
-        
+          </a>
+        <div class="nav">
+          <a class="nav-item"  href="{{ url_for('habits.user_progress') }}" >📊 Progress</a>
+          <a class="nav-item" href="{{ url_for('habits.get_habits') }}">📋 Manage Habits</a>
+          <a class="nav-item" href="{{ url_for('settings.user_settings') }}">⚙️ Settings</a>
+          <a class="nav-item" href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+      </div>
         <main class="settings-main">
             <h1>Account Settings</h1>
             
@@ -80,15 +79,9 @@
                     <button id="delete-account-btn" class="btn-danger">Delete Account</button>
                 </div>
             </div>
-
-            <div class="danger-option">
-                <h3>Logout</h3>
-                <p>Sign out of your account (you can sign back in later)</p>
-                <button onclick="logout()" class="btn-danger">Logout</button>
-            </div>
         </main>
     </div>
     
-    <script src="js/settings.js"></script>
+    <!--<script src="{{ url_for('static', filename='js/settings.js') }}"></script>-->
 </body>
 </html>

@@ -51,15 +51,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add habit button functionality (placeholder)
-    const addHabitButtons = document.querySelectorAll('.add-habit-btn');
+    document.addEventListener("DOMContentLoaded", function() {
+        // Function to open the modal
+        function openModal() {
+          document.getElementById('addHabitModal').style.display = 'block';
+        }
     
-    addHabitButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            alert('Add new habit functionality would be implemented here');
+        // Function to close the modal
+        function closeModal() {
+          document.getElementById('addHabitModal').style.display = 'none';
+        }
+    
+        // Add event listeners to all "Add Habit" buttons to open the modal
+        const addHabitButtons = document.querySelectorAll('.add-habit-button, .add-habit-btn');
+        addHabitButtons.forEach(button => {
+          button.addEventListener('click', openModal);
         });
-    });
     
-    // Simulate loading the dashboard view by default
-    document.querySelector('.dashboard-view').classList.add('active-view');
-});
-
+        // Close modal when close button is clicked
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        if (closeModalBtn) {
+          closeModalBtn.addEventListener('click', closeModal);
+        }
+    
+        // Optional: Close modal when clicking outside the modal content
+        window.addEventListener('click', function(event) {
+          const modal = document.getElementById('addHabitModal');
+          if (event.target === modal) {
+            closeModal();
+          }
+        });
+    
+        // Simulate loading the dashboard view by default
+        document.querySelector('.dashboard-view')?.classList.add('active-view');
+      });

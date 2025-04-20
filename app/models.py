@@ -59,7 +59,7 @@ class TrackedHabit(db.Model):
 
 
     logs = db.relationship('HabitLog', backref='tracked_habit', lazy=True)
-    goal = db.relationship('Goal', backref='tracked_habit', uselist=False) #one-to-one relationship
+    goal = db.relationship('Goal', backref='tracked_habit', uselist=False, cascade='all, delete-orphan',passive_deletes=True) #one-to-one relationship
 
 class Milestone(db.Model):
     __tablename__ = 'milestone'
@@ -75,7 +75,7 @@ class Goal(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer,db.ForeignKey('new_schema.user.id'),nullable=False)
-    tracked_habit_id = db.Column(db.Integer,db.ForeignKey('new_schema.tracked_habit.id'),nullable=False)
+    tracked_habit_id = db.Column(db.Integer,db.ForeignKey('new_schema.tracked_habit.id', ondelete='CASCADE'),nullable=False)
     goal_freq = db.Column(db.Integer, default=1)
     goal_type = db.Column(db.String(50),nullable=False)
     created_at = db.Column(db.DateTime(timezone=True),default=lambda: datetime.now(timezone.utc))

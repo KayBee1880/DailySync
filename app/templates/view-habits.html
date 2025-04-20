@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Lifestyle App | View Habits{% endblock %}
+
+{% block content %}
+<div class="sidebar">
+  <a href="{{ url_for('auth.dashboard') }}" class="profile-link">
+    <div class="profile">
+      <div class="profile-icon"></div>
+      <div>{{ user.username }}</div>
+      <div style="font-size: 12px; color: #555">{{ user.email }}</div>
+    </div>
+  </a>
+  <div class="nav">
+    <a class="nav-item"  href="{{ url_for('habits.user_progress') }}" >📊 Progress</a>
+    <a class="nav-item" href="{{ url_for('habits.get_habits') }}">📋 Manage Habits</a>
+    <a class="nav-item" href="{{ url_for('settings.user_settings') }}">⚙️ Settings</a>
+    <a class="nav-item" href="{{ url_for('auth.logout') }}">Logout</a>
+  </div>
+</div>
+    <main class="main-content">
+        <div class="view manage-habits-view">
+            <h2>{{ user.username }}'s Habits</h2>
+            
+            {% if habits %}
+                <div class="habits-list-container">
+                {% for habit in habits %}
+
+                        <div class="habit-item">
+                            <span>{{ habit.habit_name }}</span>
+                            {% if habit.streak <= 2 %}
+                                <span class="streak">{{ habit.streak }}<i class="fas fa-arrow-down"></i></span>
+                            {% else %}
+                                <span class="streak">{{ habit.streak }} 🔥<i class="fas fa-arrow-down"></i></span>
+                            {% endif %}
+                            <button class="edit-habit-btn"
+                                data-habit-id="{{ habit.id }}"
+                                data-goal-type="{{ habit.goal.goal_type }}"
+                                data-goal-freq="{{ habit.goal.goal_freq }}">
+                                ✏️ Edit
+                            </button>
+
+                            <form method="POST" action="{{ url_for('habits.delete_habit') }}" class="delete-form" style="display:inline">
+                              <input type="hidden"  name="habit_id" value="{{ habit.id }}">
+                              <button type="submit" onclick="return confirm('Are you sure you want to delete this habit?')">🗑️</button>
+                            </form>
+                        </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p>No Habits Created</p><br>
+            {% endif %}  
+            <button class="add-habit-button" type="button">+ Add Habit</button>
+        </div>
+    </main>
+        
+    <!-- Edit Habit Modal -->
+  <div id="editHabitModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModalBtn">&times;</span>
+      <h2>Edit Habit</h2>
+      <form id="editHabitForm" method="POST" action="{{ url_for('habits.edit_habit') }}">
+            <input type="hidden" id="editHabitId" name="habit_id">
+        <br>
+        <label for="editGoalType"> Goal Type:</label>
+        <select id="editGoalType" name="goal_type" required>
+          <option value="" disabled selected>Select a Goal Type</option><br>
+          <option value="daily">daily</option>
+          <option value="weekly">weekly</option>
+          <option value="monthly">monthly</option>
+        </select>
+        <br>
+        <div id="editGoalFrequencyWrapper">
+            <label for="editGoalFrequency">Goal Frequency:</label>
+            <input type="number" id="editGoalFrequency" name="goal_frequency" required placeholder="Enter frequency (e.g., 3 times/week)">
+        </div>   
+        <br>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+
+
+  <!-- Add Habit Modal -->
+  <div id="addHabitModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModalBtn">&times;</span>
+      <h2>Add Habit</h2>
+      <form id="habitForm" method="POST" action="{{ url_for('habits.add_habit') }}">
+        <label for="habitSelect">Select Habit:</label>
+        <select id="habitSelect" name="habit" required>
+          <option value="" disabled selected>Select a Habit</option>
+          {% for habit_option in all_habits %}
+            <option value="{{ habit_option.name }}">{{ habit_option.name }}</option>
+          {% endfor %}
+        </select>
+        <br>
+        <label for="goalTypeSelect">Select Goal Type:</label>
+        <select id="goalTypeSelect" name="goal_type" required>
+          <option value="" disabled selected>Select a Goal Type</option><br>
+          <option value="Streak">daily</option>
+          <option value="Frequency">weekly</option>
+          <option value="Duration">monthly</option>
+        </select>
+        <br>
+        <label for="goalFrequency">Goal Frequency:</label>
+        <input type="number" id="goalFrequency" name="goal_frequency" required placeholder="Enter frequency (e.g., 3 times/week)">
+        
+        <button type="submit">Save Habit</button>
+      </form>
+    </div>
+  </div>
+
+
+<script src="{{url_for('static', filename='js/auth.js') }}"></script>
+<script src="{{url_for('static', filename='js/script.js') }}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Open and close modal functions
+      function openModal() {
+          document.getElementById('addHabitModal').style.display = 'block';  // Show the modal
+      }
+  
+      function closeModal() {
+          document.getElementById('addHabitModal').style.display = 'none';   // Hide the modal
+      }
+  
+      // Add event listener to the open modal button
+      const openModalBtn = document.querySelector('.add-habit-button');
+      if (openModalBtn) {
+          openModalBtn.addEventListener('click', openModal);
+      }
+  
+      // Add event listener to the close modal button
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      if (closeModalBtn) {
+          closeModalBtn.addEventListener('click', closeModal);
+      }
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+  // Open and close Edit Habit modal
+  function openEditModal(habitId, goalType, goalFrequency) {
+    document.getElementById('editHabitId').value = habitId;
+    document.getElementById('editGoalType').value = goalType;
+    document.getElementById('editGoalFrequency').value = goalFrequency || '';
+    
+    // Toggle frequency input visibility
+    toggleEditFrequency(goalType);
+
+    document.getElementById('editHabitModal').style.display = 'block';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editHabitModal').style.display = 'none';
+  }
+
+  function toggleEditFrequency(goalType) {
+    const wrapper = document.getElementById('editGoalFrequencyWrapper');
+    if (goalType === 'Streak') {
+      wrapper.style.display = 'none';
+    } else {
+      wrapper.style.display = 'block';
+    }
+  }
+
+  // Open modal when clicking edit buttons
+  document.querySelectorAll('.edit-habit-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const habitId = this.dataset.habitId;
+      const goalType = this.dataset.goalType;
+      const goalFrequency = this.dataset.goalFrequency;
+
+      openEditModal(habitId, goalType, goalFrequency);
+    });
+  });
+
+  // Listen to Goal Type change to toggle frequency input
+  document.getElementById('editGoalType').addEventListener('change', function() {
+    toggleEditFrequency(this.value);
+  });
+
+  // Close button
+  document.getElementById('closeEditModalBtn').addEventListener('click', closeEditModal);
+
+  // Close modal when clicking outside
+  window.addEventListener('click', function(event) {
+    const editModal = document.getElementById('editHabitModal');
+    if (event.target === editModal) {
+      closeEditModal();
+    }
+  });
+});
+  </script>
+{% endblock %}

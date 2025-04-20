@@ -1,22 +1,22 @@
 from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, current_user, logout_user
-from models import User, Habit, TrackedHabit
+from models import User, Habit, TrackedHabit, HabitLog
 from extensions import db, bcrypt
-from support import validate_password, get_week_range
-from datetime import datetime
+from support import validate_password, get_week_range, get_current_week_dates
+from datetime import datetime, timezone, date
 
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/", methods=['GET'])
 def index():
-    return render_template("index.html")
+    return render_template("index.html",user=current_user)
 
 @auth_bp.route("/register",methods=['GET','POST'])
 def register():
     try:
         if request.method == 'GET':
-            return render_template('register.html')
+            return render_template('signup.html',user=current_user)
         
         username = request.form.get('username')
         password1 = request.form.get('password1')
@@ -57,7 +57,7 @@ def register():
 def login():
     try:
         if request.method == 'GET':
-            return render_template('login.html')
+            return render_template('login.html',user=current_user)
         elif request.method == 'POST':
             user = User.query.filter_by(username=request.form.get('username')).first()
             if user and bcrypt.check_password_hash(user.password,request.form.get('password')):
@@ -65,6 +65,7 @@ def login():
                 flash(f'User {user.username} successfully logged in','success')
                 return redirect(url_for('auth.dashboard'))
             else:
+                print(request.form.get('username'), user.username)
                 flash('Invalid username or password','error')
                 return redirect(url_for('auth.login'))
     except Exception as e:
@@ -76,16 +77,54 @@ def login():
 @login_required
 def dashboard():
     try:
-        today = datetime.today()
-        week_range = get_week_range()
+        week_offset = int(request.args.get('week_offset',0))
+        today = datetime.now(timezone.utc).date()
+        week_range = get_week_range(week_offset)
+        week_dates = get_current_week_dates(week_offset)
+        week_dates_only = [d.date() for d in week_dates]
         user = current_user
+
+        all_logs_today = [] #what habits were ogged today for today panel
+        logs_by_habit = {} #what date of the week was a habit logged
+
         for habit in user.tracked_habits:
-            habit_completed = habit.last_completed == today
-            habit.completed_today = habit_completed
+            #get all user logs for this week
+            logs =  HabitLog.query.filter(
+                HabitLog.tracked_habit_id == habit.id,
+                db.func.date(HabitLog.date_logged).between(week_dates_only[0], week_dates_only[-1])
+                ).all()
+            
+            logs_this_week = [
+                log for log in logs
+                if log.date_logged.date() in week_dates_only
+            ]
+
+            logs_by_habit[habit.id] = {
+                log.date_logged.date().isoformat(): log for log in logs_this_week
+            }
+            for log in habit.logs:
+                if log.date_logged.date() == today:
+                    all_logs_today.append(habit.id)
+                    break
+
+        print(f"Logged today: ",all_logs_today)
+        print("Week range:", get_week_range())
+        print("Dates:", get_current_week_dates())
+        print("Logs by habit",logs_by_habit)
 
         if request.method == 'GET':
-            return render_template('dashboard-2.html',user=current_user,habits=user.tracked_habits,
-                                    all_habits = Habit.query.all(),today_date = today, week_range=week_range)
+            return render_template(
+                'dashboard-2.html',
+                user=current_user,
+                habits=user.tracked_habits,
+                all_habits = Habit.query.all(),
+                today_date = today,
+                week_range=week_range,
+                week_offset=week_offset,
+                logged_today = all_logs_today,
+                week_dates=week_dates,
+                logs_by_habit = logs_by_habit
+                )
         elif request.method == 'POST':
                 return redirect(url_for('auth.dashboard'))
 
