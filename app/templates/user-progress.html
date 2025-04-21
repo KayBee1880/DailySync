@@ -73,24 +73,27 @@
 
             <div class="habit-card">
               <div class="habit-header">
-                <p>{{ comment }}</p>
+                <p>{{ comment[0] }}
+                  {% if comment[1] == 'positive' %} 🟢{% endif %}
+                  {% if comment[1] == 'negative' %} 🔴{% endif %}
+                </p>
               </div>
             </div>
         {% endfor %}
       {% else %}
-        <p>No Feedback</p>
+        <p>No Feedback Yet</p>
       {% endif %}
     </div> 
     <script>
         const ctx = document.getElementById('habitChart').getContext('2d');
       
-        const currentWeekData = [3, 2, 4, 1, 5, 0, 2];
-        const previousWeekData = [2, 1, 3, 2, 2, 0, 1];
+        const currentWeekData = {{ current_week_data|tojson }};
+        const previousWeekData = {{ last_week_data|tojson }};
       
         const habitChart = new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            labels: {{ habit_labels|tojson }},
             datasets: [
               {
                 label: 'This Week',

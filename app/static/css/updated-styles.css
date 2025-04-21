@@ -112,54 +112,55 @@ body {
   font-weight: bold;
 }
 
+.habits-table-container {
+    border: 2px solid #b5a7c2; /* greyish purple */
+    border-radius: 16px;
+    padding: 16px;
+    background-color: #fafafa;
+    overflow: hidden;
+}
+
+/* Use separate borders and spacing to remove grid lines */
 table.habits-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0;
+    table-layout: fixed;
 }
 
 .habits-table th,
 .habits-table td {
-  text-align: center;
-  border: 1px solid #ccc;
-  padding: 0;
+    text-align: center;
+    padding: 0;
+    border: none !important; /* override any other border rules */
+    background-color: transparent;
 }
 
 .habits-table th:first-child,
 .habits-table td:first-child {
-  text-align: left;
-  padding-left: 10px;
-  font-weight: bold;
-  background-color: #f1f1f1;
+    text-align: left;
+    padding-left: 10px;
+    font-weight: bold;
+    background-color: #f1f1f1;
 }
-.habits-table-container {
-    position: relative;
-    overflow: hidden;
-  }
-  
-.habits-table {
-    transition: transform 0.4s ease-in-out;
-  }
-  
-  .slide-left {
-    transform: translateX(-100%);
-  }
-  
-  .slide-right {
-    transform: translateX(100%);
-  }
-  
+
+/* Optional: add light line under header */
+.habits-table thead tr {
+    border-bottom: 1px solid #ddd;
+}
 
 .habit-cell {
-  width: 40px;
-  aspect-ratio: 1 / 1;
-  background-color: lightgray;
-  border-radius: 6px;
-  margin: 4px auto;
+    width: 40px;
+    aspect-ratio: 1 / 1;
+    background-color: lightgray;
+    border-radius: 6px;
+    margin: 4px auto;
 }
+
 .habit-cell.completed {
-  background-color: #4d9ae2;
+    background-color: #4d9ae2;
 }
+/*
 .grid {
   display: grid;
   grid-template-columns: 120px repeat(7, 1fr);
@@ -171,7 +172,7 @@ table.habits-table {
   text-align: center;
   padding: 10px;
   border-radius: 6px;
-}
+}*/
 
 .habit-label {
   font-weight: bold;
@@ -747,6 +748,31 @@ body {
     margin-bottom: 10px;
     color: #6c757d;
 }
+.settings-layout {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    align-items: flex-start;
+  }
+  
+  .settings-left {
+    flex: 2;
+  }
+  
+  .settings-right {
+    flex: 1;
+  }
+  
+  .settings-section {
+    margin-bottom: 2rem;
+  }
+  
+  .danger-zone {
+    border: 1px solid #f00;
+    padding: 1rem;
+    background-color: #ffe5e5;
+    border-radius: 8px;
+  }
 
 /* Add to existing style.css */
 .color-indicator {

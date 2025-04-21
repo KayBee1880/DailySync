@@ -27,10 +27,14 @@ def add_habit():
         new_tracked_habit = TrackedHabit(user_id=current_user.id, habit_name=habit_name, habit_id=habit.id)
         db.session.add(new_tracked_habit)
         db.session.commit()
-        if not goal_type == 'daily':
-            goal_freq = request.form.get("goal_frequency")
-        else:
-            goal_freq = 365
+        #how many times a week should they log a habit
+        if goal_type == 'daily':
+            goal_freq = 7
+        elif goal_type == 'weekly':
+            goal_freq = goal_freq
+        elif goal_type == 'monthly':
+            goal_freq = goal_freq // 4
+
         new_goal = Goal(user_id=current_user.id, tracked_habit_id=new_tracked_habit.id,
                         goal_freq=goal_freq, goal_type=goal_type)
         print('New goal',new_goal)
@@ -131,20 +135,60 @@ def delete_habit():
 @habits_bp.route("/progress", methods = ['GET'])
 @login_required
 def user_progress():
-    feedback = ["First comment","Second comment","Third comment"]
-    for habit in current_user.tracked_habits:
-        print(habit.habit_name)
-        print(habit.goal)
-        #current_week, last_week = get_weekly_logs(habit.id)
-        current_week, last_week = 2,1
-        percent_change = abs(round(((current_week - last_week)/last_week) * 100))
-        if current_week > last_week:
-            feedback.append(f'Congrats! Your commitment to your {habit.habit_name} habit is up {percent_change}% this week')
-        elif current_week < last_week:
-            feedback.append(f'Your {habit.habit_name} logs was down {percent_change}% this week. Consider lowering your goal \
-                             to a more comfortable frequency then progressively increase.')
-        
-        if habit.goal.goal_freq == current_week:
-            feedback.append(f'Congrats! You fulfilled your commitment to your {habit.habit_name} habit this week')
+    try:
+        feedback = [("Feedback 1","negative"),("Feedback 2","negative")]
+        habit_labels = []
+        last_week_data = []
+        current_week_data = []
+        for habit in current_user.tracked_habits:
+            print(habit.habit_name)
+            print(habit.goal)
+
+            current_week, last_week = get_weekly_logs()
+            logs_this_week =  HabitLog.query.filter(
+                    HabitLog.tracked_habit_id == habit.id,
+                    db.func.date(HabitLog.date_logged).between(current_week[0], current_week[1])
+                ).count()
+            print("Expected range for last week:", last_week[0], "-", last_week[1])
+            logs_last_week =  HabitLog.query.filter(
+                    HabitLog.tracked_habit_id == habit.id,
+                    db.func.date(HabitLog.date_logged).between(last_week[0], last_week[1])
+                ).count()
             
-    return render_template('user-progress.html', comments = feedback, user=current_user, habits = current_user.tracked_habits)
+            last_week_data.append(logs_last_week)
+            current_week_data.append(logs_this_week)
+            habit_labels.append(habit.habit_name)
+            if logs_last_week == 0 and logs_this_week > 0:
+                percent_change = 100
+            elif logs_last_week == 0 and logs_this_week == 0:
+                percent_change = 0
+            elif logs_last_week != 0:
+                percent_change = abs(round(((logs_this_week - logs_last_week)/logs_last_week) * 100))
+
+
+            if logs_this_week > logs_last_week:
+                feedback.append((f'Congrats! Your commitment to your {habit.habit_name} habit is up {percent_change}% this week','positive'))
+            elif logs_this_week < logs_last_week:
+                feedback.append((f'Your {habit.habit_name} logs was down {percent_change}% this week. Consider lowering your goal \
+                                to a more comfortable frequency then progressively increase.','negative'))
+            
+            print(f"{habit.habit_name}: {habit.goal.goal_freq} and Current week {logs_this_week}")
+            if habit.goal.goal_freq == logs_this_week:
+                print('Goal freq',habit.goal.goal_freq,'Log this week', logs_this_week)
+                feedback.append((f'Congrats! You\'ve fulfilled your commitment to your {habit.habit_name} habit this week','positive'))
+            elif habit.goal.goal_freq < logs_this_week:
+                feedback.append((f'Well done! You\'ve exceeded your goal for your {habit.habit_name} habit this week','positive'))
+
+        return render_template(
+            'user-progress.html',
+            comments = feedback,
+            user=current_user,
+            habits = current_user.tracked_habits,
+            habit_labels=habit_labels,
+            last_week_data=last_week_data,
+            current_week_data=current_week_data
+            )
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error loading progress habit: {e}', 'error')
+        return redirect(url_for('auth.dashboard'))

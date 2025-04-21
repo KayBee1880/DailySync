@@ -34,11 +34,12 @@ def get_week_range(week_offset = 0):
     return f"{start_of_week_str} - {end_of_week_str}"
 
 #need a function that will find all timestaps from previous week and all timestamps of current week so far
-def get_weekly_logs(habit_id):
+def get_weekly_logs():
     today = datetime.today()
     start_of_week = today - timedelta(days=today.weekday() + 1 if today.weekday() != 6 else 0)
     end_of_week = start_of_week + timedelta(days=6)
-    logs_current_week = HabitLog.query.filter(HabitLog.tracked_habit_id == habit_id, HabitLog.date_logged >= start_of_week).count()
+    end_of_last_week = start_of_week - timedelta(days=1)
+    start_of_last_week = end_of_last_week - timedelta(days=6)
 
-    logs_last_week = HabitLog.query.filter(HabitLog.tracked_habit_id == habit_id, HabitLog.date_logged <= end_of_last_week).count()
-    return logs_current_week, logs_last_week
+    current_week, last_week = (start_of_week.date(),end_of_week.date()), (start_of_last_week.date(), end_of_last_week.date())
+    return current_week, last_week  

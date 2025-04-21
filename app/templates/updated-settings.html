@@ -1,87 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Settings</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/updated-styles.css') }}">
-</head>
-<body>
-    <div class="sidebar">
-        <a href="{{ url_for('auth.dashboard') }}" class="profile-link">
-            <div class="profile">
-              <div class="profile-icon"></div>
-              <div>{{ user.username }}</div>
-              <div style="font-size: 12px; color: #555">{{ user.email }}</div>
-            </div>
-          </a>
-        <div class="nav">
-          <a class="nav-item"  href="{{ url_for('habits.user_progress') }}" >📊 Progress</a>
-          <a class="nav-item" href="{{ url_for('habits.get_habits') }}">📋 Manage Habits</a>
-          <a class="nav-item" href="{{ url_for('settings.user_settings') }}">⚙️ Settings</a>
-          <a class="nav-item" href="{{ url_for('auth.logout') }}">Logout</a>
+{% extends "base.html" %}
+{% block title %}Lifestyle App | Settings{% endblock %}
+{% block content %}
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Account Settings</title>
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/updated-styles.css') }}">
+  </head>
+
+  <body>
+      <div class="sidebar">
+          <a href="{{ url_for('auth.dashboard') }}" class="profile-link">
+              <div class="profile">
+                <div class="profile-icon"></div>
+                <div>{{ user.username }}</div>
+                <div style="font-size: 12px; color: #555">{{ user.email }}</div>
+              </div>
+            </a>
+          <div class="nav">
+            <a class="nav-item"  href="{{ url_for('habits.user_progress') }}" >📊 Progress</a>
+            <a class="nav-item" href="{{ url_for('habits.get_habits') }}">📋 Manage Habits</a>
+            <a class="nav-item" href="{{ url_for('settings.user_settings') }}">⚙️ Settings</a>
+            <a class="nav-item" href="{{ url_for('auth.logout') }}">Logout</a>
+          </div>
         </div>
-      </div>
         <main class="settings-main">
-            <h1>Account Settings</h1>
-            
+          <h1>Account Settings</h1>
+        
+          <div class="settings-layout">
+            <!-- Left Side: Account Info + Password -->
             <div class="settings-section">
-                <h2>Account Information</h2>
-                <form id="account-form">
-                    <div class="form-group">
-                        <label for="settings-name">Name</label>
-                        <input type="text" id="settings-name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="settings-email">Email</label>
-                        <input type="email" id="settings-email" required>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary">Update Account</button>
-                </form>
-            </div>
+              <h2>Account Information</h2>
+              <form id="account-form" method="POST" action="{{ url_for('settings.update_account') }}">
+                <div class="form-group">
+                  <label for="settings-name">Name</label>
+                  <input type="text" id="settings-name" name="username" value="{{ user.username }}" required>
+                </div>
             
+                <div class="form-group">
+                  <label for="settings-email">Email</label>
+                  <input type="email" id="settings-email" name="email" value="{{ user.email }}" required>
+                </div>
+            
+                <button type="submit" class="btn-primary">Update Account</button>
+              </form>
+            </div>
+        
             <div class="settings-section">
-                <h2>Change Password</h2>
-                <form id="password-form">
-                    <div class="form-group">
-                        <label for="current-password">Current Password</label>
-                        <input type="password" id="current-password" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="new-password">New Password</label>
-                        <input type="password" id="new-password" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confirm-password">Confirm New Password</label>
-                        <input type="password" id="confirm-password" required>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary">Change Password</button>
-                </form>
+              <h2>Change Password</h2>
+              <button type="button" class="btn-primary" onclick="openPasswordModal()">Change Password</button>
             </div>
-            
-            <div class="settings-section danger-zone">
+        
+            <!-- Right Side: Danger Zone -->
+            <div class="settings-right">
+              <div class="settings-section danger-zone">
                 <h2>Danger Zone</h2>
-                
+        
                 <div class="danger-option">
-                    <h3>Reset All Progress</h3>
-                    <p>This will erase all your habit data but keep your account.</p>
-                    <button id="reset-progress-btn" class="btn-danger">Reset Progress</button>
+                  <h3>Reset All Progress</h3>
+                  <p>This will erase all your habit data but keep your account.</p>
+                  <button id="reset-progress-btn" class="btn-danger">Reset Progress</button>
                 </div>
-                
+        
                 <div class="danger-option">
-                    <h3>Delete Account</h3>
-                    <p>This will permanently delete your account and all data.</p>
-                    <button id="delete-account-btn" class="btn-danger">Delete Account</button>
+                  <h3>Delete Account</h3>
+                  <p>This will permanently delete your account and all data.</p>
+                  <button id="delete-account-btn" class="btn-danger">Delete Account</button>
                 </div>
+              </div>
             </div>
+          </div>
+          <div id="passwordModal" class="modal">
+              <div class="modal-content">
+                <span class="close-btn" onclick="closePasswordModal()">&times;</span>
+                <h2>Change Password</h2>
+                <form method="POST" action="{{ url_for('settings.change_password') }}">
+                  <input type="password" name="current_password" placeholder="Current Password" required>
+                  <input type="password" name="new_password" placeholder="New Password" required>
+                  <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                  <button type="submit">Submit</button>
+                </form>
+              </div>
+          </div>
         </main>
-    </div>
-    
-    <!--<script src="{{ url_for('static', filename='js/settings.js') }}"></script>-->
-</body>
-</html>
+        <script>
+          function openPasswordModal() {
+            document.getElementById("passwordModal").style.display = "block";
+          }
+        
+          function closePasswordModal() {
+            document.getElementById("passwordModal").style.display = "none";
+          }
+        
+          // Optional: close modal if user clicks outside content
+          window.onclick = function(event) {
+            const modal = document.getElementById("passwordModal");
+            if (event.target == modal) {
+              modal.style.display = "none";
+            }
+          };
+        </script>
+      
+      <!--<script src="{{ url_for('static', filename='js/settings.js') }}"></script>-->
+  </body>
+{% endblock %}

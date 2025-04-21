@@ -13,8 +13,8 @@
         <form id="login-form" class="auth-form">
             <h2>Login</h2>
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required>
+                <label for="username">Email</label>
+                <input type="username" id="username" required>
             </div>
             
             <div class="form-group">
@@ -30,19 +30,4 @@
         </form>
     </div>
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
-    <!--
-    <a href="{{ url_for('test.test_page') }}">Dashboard</a>
-    <br>
-    <a href="{{ url_for('auth.register') }}">Register</a>
-    <br>
-    <a href="{{ url_for('settings.user_settings') }}">Settings</a>
-    <br>
-    <a href="{{ url_for('test.test_habits') }}">Habits</a>
-    <br>
-    <a href="{{ url_for('test.test_signup') }}">Signup</a>
-    <br>
-    <a href="{{ url_for('test.test_setup') }}">Setup</a>
-    <br>
-    <a href="{{ url_for('test.test_settings') }}">Settings</a>
-    <br>-->
 {% endblock %}
