@@ -31,18 +31,20 @@
             <!-- Left Side: Account Info + Password -->
             <div class="settings-section">
               <h2>Account Information</h2>
-              <form id="account-form" method="POST" action="{{ url_for('settings.update_account') }}">
+              <form id="account-form" method="POST" action="{{ url_for('settings.update_username') }}">
                 <div class="form-group">
                   <label for="settings-name">Name</label>
                   <input type="text" id="settings-name" name="username" value="{{ user.username }}" required>
                 </div>
+                <button type="submit" class="btn-primary">Update Username</button>
+              </form>
+              <form id="account-form" method="POST" action="{{ url_for('settings.update_email') }}">
             
                 <div class="form-group">
                   <label for="settings-email">Email</label>
                   <input type="email" id="settings-email" name="email" value="{{ user.email }}" required>
                 </div>
-            
-                <button type="submit" class="btn-primary">Update Account</button>
+                <button type="submit" class="btn-primary">Update Email</button>
               </form>
             </div>
         
@@ -59,13 +61,26 @@
                 <div class="danger-option">
                   <h3>Reset All Progress</h3>
                   <p>This will erase all your habit data but keep your account.</p>
-                  <button id="reset-progress-btn" class="btn-danger">Reset Progress</button>
+                  <form
+                    action="{{ url_for('settings.reset_progress') }}" 
+                    method="POST"
+                    onsubmit="return confirm('Are you sure you want to reset all your progress? This cannot be undone.')"
+                  >
+                    <button type="submit" class="btn-danger">Reset Progress</button>
+                  </form>
                 </div>
+                
         
                 <div class="danger-option">
                   <h3>Delete Account</h3>
                   <p>This will permanently delete your account and all data.</p>
-                  <button id="delete-account-btn" class="btn-danger">Delete Account</button>
+                  <form 
+                    action ="{{ url_for('settings.delete_account') }}"
+                    method="POST"
+                    onsubmit="return confirm('Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone.')"
+                  >
+                    <button type="submit" class="btn-danger">Delete Account</button>
+                  </form>
                 </div>
               </div>
             </div>

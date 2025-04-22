@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Lifestyle App | SignUp {% endblock %}
+{% block title %}Daily Sync | SignUp {% endblock %}
 
 
 {% block content %}
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Habit Tracker</h1>
+            <h1>Daily Sync</h1>
             <p>Get started with building better habits</p>
         </div>
         
         <form id="signup-form" class="auth-form" action="{{ url_for('auth.register') }}" method="POST" enctype="multipart/form-data">
             <h2>Create Account</h2>
             <div class="form-group">
-                <label for="username">Name</label>
+                <label for="username">Username</label>
                 <input type="text" id="username" name="username" required>
             </div>
             
@@ -38,4 +38,15 @@
             </div>
         </form>
     </div>
+    
+    <div class="password-rules">
+        <strong>Password must contain:</strong>
+        <ul class="password-rules" id="password-rules">
+            <li id="length">At least 6 characters</li>
+            <li id="uppercase">At least 1 uppercase letter</li>
+            <li id="number">At least 1 number</li>
+            <li id="special">At least 1 special character (~!@#$%^&*(),.?)</li>
+          </ul>
+    </div>
+    <script src="{{ url_for('static', filename = 'js/auth.js') }}"></script>
 {% endblock %}

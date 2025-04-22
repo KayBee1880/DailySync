@@ -1,4 +1,16 @@
-// Check if user is already logged in
+const passwordInput = document.getElementById("password1");
+  
+passwordInput.addEventListener("input", function () {
+  const val = passwordInput.value;
+
+  // Rules
+  document.getElementById("length").classList.toggle("valid", val.length >= 6);
+  document.getElementById("uppercase").classList.toggle("valid", /[A-Z]/.test(val));
+  document.getElementById("number").classList.toggle("valid", /[0-9]/.test(val));
+  document.getElementById("special").classList.toggle("valid", /[~!@#$%^&*(),.?]/.test(val));
+});
+
+/*// Check if user is already logged in
 document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user && window.location.pathname.endsWith('index.html')) {
@@ -39,7 +51,7 @@ if (loginForm) {
     });
 }
 
-/* Signup functionality
+/ Signup functionality
 const signupForm = document.getElementById('signup-form');
 if (signupForm) {
     signupForm.addEventListener('submit', (e) => {
@@ -92,7 +104,7 @@ if (signupForm) {
 function logout() {
     localStorage.removeItem('currentUser');
     window.location.href = 'index.html'; 
-}*/
+}
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -118,3 +130,4 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
+*/

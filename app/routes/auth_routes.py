@@ -3,14 +3,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, current_user, logout_user
 from models import User, Habit, TrackedHabit, HabitLog
 from extensions import db, bcrypt
-from support import validate_password, get_week_range, get_current_week_dates
+from support import validate_password, get_week_range, get_current_week_dates, get_local_today
 from datetime import datetime, timezone, date
 
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/", methods=['GET'])
 def index():
-    return render_template("index.html",user=current_user)
+    return redirect(url_for('auth.login'))
 
 @auth_bp.route("/register",methods=['GET','POST'])
 def register():
@@ -64,6 +64,9 @@ def login():
                 login_user(user)
                 flash(f'User {user.username} successfully logged in','success')
                 return redirect(url_for('auth.dashboard'))
+            elif not user:
+                flash('No such account exists','error')
+                return redirect(url_for('auth.register'))
             else:
                 print(request.form.get('username'), user.username)
                 flash('Invalid username or password','error')
@@ -78,7 +81,7 @@ def login():
 def dashboard():
     try:
         week_offset = int(request.args.get('week_offset',0))
-        today = datetime.now(timezone.utc).date()
+        today = get_local_today()
         week_range = get_week_range(week_offset)
         week_dates = get_current_week_dates(week_offset)
         week_dates_only = [d.date() for d in week_dates]
@@ -106,7 +109,7 @@ def dashboard():
                 if log.date_logged.date() == today:
                     all_logs_today.append(habit.id)
                     break
-
+        print(f"Today: {today}")                
         print(f"Logged today: ",all_logs_today)
         print("Week range:", get_week_range())
         print("Dates:", get_current_week_dates())

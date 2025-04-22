@@ -10,10 +10,10 @@
             <p>Build better habits, one day at a time</p>
         </div>
         
-        <form id="login-form" class="auth-form">
+        <form method="POST" class="auth-form" action="{{ url_for('auth.login') }}" enctype="multipart/form-data">
             <h2>Login</h2>
             <div class="form-group">
-                <label for="username">Email</label>
+                <label for="username">Username</label>
                 <input type="username" id="username" required>
             </div>
             
@@ -21,7 +21,6 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" required>
             </div>
-            
             <button type="submit" class="auth-btn">Login</button>
             
             <div class="auth-footer">

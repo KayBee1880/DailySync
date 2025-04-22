@@ -1,13 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Lifestyle App | Login Page{% endblock %}
+{% block title %}Daily Sync | Login Page{% endblock %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/updated-styles.css') }}">
 {% block content %}
 
     <div class="auth-container">
         <div class="auth-header">
-            <h1>LOGIN</h1>
+            <h1>Habit Tracker</h1>
+            <p>Build better habits, one day at a time</p>
         </div>
             <form method="POST" class="auth-form" action="{{ url_for('auth.login') }}" enctype="multipart/form-data">
+                <h2>Login</h2>
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required>
@@ -18,7 +20,9 @@
                     <input type="password" id="password" name="password" required>
                 </div>
                 <button type="submit" class="auth-btn">Login</button>
-
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a></p>
+                </div>
             </form>
 
         </div>

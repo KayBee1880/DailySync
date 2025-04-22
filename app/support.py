@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from models import HabitLog
+import pytz
 
 def validate_password(password1, password2):
     if password1 == password2:
@@ -15,6 +16,11 @@ def validate_password(password1, password2):
         return (False,"Password must have at least 1 valid special character",'warning')
     return (True,None,'success')     
 
+
+def get_local_today(timezone_str="America/Chicago"):
+    tz = pytz.timezone(timezone_str)
+    return datetime.now(tz).date()
+    
 
 
 # Calculate the Sunday of the current week

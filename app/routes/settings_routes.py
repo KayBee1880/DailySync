@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for
 from flask_login import login_required, current_user, logout_user
-from models import User
+from models import User, TrackedHabit, HabitLog
 from extensions import db, bcrypt
 from support import validate_password
 
@@ -11,7 +11,7 @@ settings_bp = Blueprint("settings", __name__)
 def user_settings():
     try:
         if request.method == 'GET':
-            return render_template("updated-settings.html",user=current_user)
+            return render_template("settings.html",user=current_user)
     except Exception as e:
         db.session.rollback()
         flash(f'Error loading user settings: {e}')
@@ -47,28 +47,46 @@ def change_password():
         flash(f'Error loading user settings: {e}')
         return redirect(url_for('auth.dashboard'))
 
-@settings_bp.route('/update-user', methods=['POST'])
+@settings_bp.route('/update-username', methods=['POST'])
 @login_required
-def update_account():
+def update_username():
     try:
         new_username = request.form.get('username')
-        new_email = request.form.get("email")
-
-        if not new_username or not new_email:
+        if not new_username:
             flash('Fill both fields','warning')
             return redirect(request.url)
 
-        #check if same username is entered
+        #check if same username is entered and if username is taken
         if new_username == current_user.username:
             flash('You\'re already using this username','error')
             return redirect(url_for('settings.user_settings'))
-        
-        #check if username is taken
-        if new_email != current_user.email:
+        elif new_username != current_user.username:
             existing = User.query.filter_by(username=new_username).first()
             if existing:
                 flash('That username is already taken!','error')
                 return redirect(url_for('settings.user_settings'))
+               
+        
+        # if checks passed update fields
+        current_user.username = new_username
+        db.session.commit()
+        flash('User\'s account updated successfully','success')
+        return redirect(url_for('settings.user_settings'))
+    
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error loading user settings: {e}')
+        return redirect(url_for('settings.user_settings'))
+
+@settings_bp.route('/update-user-email', methods=['POST'])
+@login_required
+def update_email():
+    try:
+        new_email = request.form.get("email")
+
+        if not new_email:
+            flash('Fill the field','warning')
+            return redirect(request.url)
 
         # Check if new email is already taken (by someone else)
         if new_email != current_user.email:
@@ -76,36 +94,53 @@ def update_account():
             if existing:
                 flash('That email is already taken!','error')
                 return redirect(url_for('settings.user_settings'))
-        elif new_email == current_user.email:
+        else:
             flash('You\'re already using this email','error')
             return redirect(url_for('settings.user_settings'))
         
         # if checks passed update fields
-        current_user.username = new_username
-        current_user.email = new_email
+        current_user.email = new_email  
         db.session.commit()
-
-        flash('User updated successfully','success')
+        flash('User\'s account updated successfully','success')
         return redirect(url_for('settings.user_settings'))
+    
     except Exception as e:
         db.session.rollback()
         flash(f'Error loading user settings: {e}')
         return redirect(url_for('settings.user_settings'))
 
-@settings_bp.route("/account_info", methods=['GET'])
-@login_required
-def account_info():
-    user = User.query.get(current_user.id)
-    return jsonify({
-        "username": user.username,
-        "joined_date": user.joined_date.strftime("%Y-%m-%d")  # assuming you have this field
-    }), 200
 
-@settings_bp.route("/account_info", methods=['GET'])
+
+@settings_bp.route("/reset-progress", methods=['POST'])
 @login_required
 def reset_progress():
-    user = User.query.get(current_user.id)
-    return jsonify({
-        "username": user.username,
-        "joined_date": user.joined_date.strftime("%Y-%m-%d")  # assuming you have this field
-    }), 200
+    try:
+        user_habits = TrackedHabit.query.filter_by(user_id=current_user.id).all()
+        if user_habits:
+            for habit in user_habits:
+                HabitLog.query.filter_by(tracked_habit_id=habit.id).delete()
+                db.session.delete(habit)
+            db.session.commit()
+
+            flash('Progress has been reset successfully','success')
+            return redirect(url_for('settings.user_settings'))
+        else:
+            flash('There is no progress to reset','error')
+            return redirect(url_for('settings.user_settings'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error resetting user progress: {e}')
+        return redirect(url_for('settings.user_settings'))
+     
+@settings_bp.route("/delete-account", methods=['POST'])
+@login_required
+def delete_account():
+    try:
+        db.session.delete(current_user)
+        db.session.commit()
+        flash('account deleted successfully', 'success')
+        return redirect(url_for('auth.index'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error resetting user progress: {e}')
+        return redirect(url_for('settings.user_settings'))
