@@ -1,8 +1,8 @@
-from flask import Blueprint, request, jsonify, flash, url_for, redirect, render_template
+from flask import Blueprint, request, jsonify, flash, url_for, redirect, render_template, current_app
 from flask_login import login_required, current_user
 from models import Habit, TrackedHabit, HabitLog, Goal
-from extensions import db
-from datetime import datetime, timezone
+from extensions import db, mail
+from datetime import datetime, timezone, date, timedelta
 from support import get_weekly_logs, get_monthly_logs
 
 habits_bp = Blueprint('habits', __name__)
@@ -15,7 +15,7 @@ def add_habit():
         if request.method == 'GET':
             return render_template('dashboard-2.html')
 
-        habit_name = request.form.get('habit')
+        habit_name = request.form.get('habit', '').strip()
         goal_type = request.form.get('goal_type')
         
         if habit_name != 'Custom':
@@ -40,7 +40,8 @@ def add_habit():
                 flash('Please provide a valid name for the custom habit.', 'error')
                 return redirect(url_for('auth.dashboard'))
             
-            if Habit.query.filter_by(name=custom_name).first():
+            normalized_name = custom_name.strip().lower()
+            if Habit.query.filter(db.func.lower(Habit.name) == normalized_name).first():
                 flash('A predefined habit by this name is already provided', 'error')
                 return redirect(url_for('auth.dashboard'))   
             
@@ -65,7 +66,8 @@ def add_habit():
                 flash('Please provide a valid goal frequency for weekly goal', 'error')
                 return redirect(url_for('auth.dashboard'))
         elif goal_type == 'monthly':
-            goal_freq = request.form.get('goal_frequency', type=int) // 4
+            raw_monthly_freq = request.form.get('goal_frequency', type=int)
+            goal_freq = max(raw_monthly_freq // 4, 1)  # Ensures at least 1
             if not goal_freq:
                 flash('Please provide a valid goal frequency for monthly goal', 'error')
                 return redirect(url_for('auth.dashboard'))
@@ -94,6 +96,7 @@ def get_habits():
     
     except Exception as e:
         db.session.rollback()
+        print(url_for('habits.edit_habit'))
         flash(f'Error viewing habits: {e}', 'error')
         return redirect(url_for('auth.dashboard'))
 
@@ -107,15 +110,37 @@ def log_habit():
         if not habit_id:
             flash('No habit id provided','error')
             return redirect(url_for('auth.dashboard'))
+        
+
+        # Check if already logged today
+        existing_log = HabitLog.query.filter(
+            HabitLog.tracked_habit_id == habit_id,
+            db.func.date(HabitLog.date_logged) == date.today()
+        ).first()
+
+        if existing_log:
+            flash('This habit has already been logged today.', 'info')
+            return redirect(url_for('auth.dashboard'))
     
         #create habit log
         new_log = HabitLog(tracked_habit_id=habit_id,date_logged=datetime.now(timezone.utc),completed=True)
         db.session.add(new_log)
 
+        
         #update habit streak
         tracked_habit = TrackedHabit.query.get(habit_id)
         tracked_habit.last_completed = new_log.date_logged
-        tracked_habit.streak += 1
+        yesterday = date.today() - timedelta(days=1)
+
+        yesterday_log = HabitLog.query.filter(
+            HabitLog.tracked_habit_id == habit_id,
+            db.func.date(HabitLog.date_logged) == yesterday
+        ).first()
+
+        if yesterday_log:
+            tracked_habit.streak += 1
+        else:
+            tracked_habit.streak = 1
 
         db.session.commit()
         flash(f'{tracked_habit.habit_name} has been logged successfully','success')
@@ -127,28 +152,68 @@ def log_habit():
         flash(f'Error viewing habits: {e}', 'error')
         return redirect(url_for('auth.dashboard'))
 
+@habits_bp.route("/undo-habit", methods=["POST"])
+@login_required
+def undo_habit():
+    habit_id = request.form.get("habit_id")
+    today = date.today()
+
+    try:
+        log = HabitLog.query.filter(HabitLog.tracked_habit_id == int(habit_id), db.func.date(HabitLog.date_logged) == today).first()
+        print(log,"today",today)
+        if log:
+            habit = TrackedHabit.query.get(habit_id)
+            habit.streak = max(habit.streak - 1,0)
+            db.session.delete(log)
+            db.session.commit()
+            flash("Habit log undone for today.", "success")
+        else:
+            flash("No log found for today to undo.", "error")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error undoing habit: {e}", "error")
+
+    return redirect(url_for("auth.dashboard"))
 
 
 @habits_bp.route("/edit-habit", methods=['POST'])
 @login_required
 def edit_habit():
     try:
-        if request.method == 'POST':
-            goal = Goal.query.filter_by(tracked_habit_id = request.form.get("habit_id")).first()
-            goal.goal_type = request.form.get("goal_type")
-            if not goal.goal_type == 'daily':
-                goal.goal_freq = request.form.get("goal_frequency")
-            else:
-                goal.goal_freq = 365
+        habit_id = request.form.get("habit_id")
+        goal_type = request.form.get("goal_type")
+        goal_freq = request.form.get("goal_frequency")
 
-            db.session.commit()
-            flash(f'Successfully edited habit','success')
-            return redirect(url_for('habits.get_habits'))
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error viewing habits: {e}', 'error')
+
+        goal = Goal.query.join(TrackedHabit).filter(
+            Goal.tracked_habit_id == habit_id,
+            TrackedHabit.user_id == current_user.id
+        ).first()
+        goal.goal_type = goal_type
+        if goal_type == 'daily':
+            goal.goal_freq = 7  # Daily goal is always 7 (one for each day of the week)
+        elif goal_type == 'weekly':
+            goal.goal_freq = request.form.get('goal_frequency', type=int)
+            if not goal_freq:
+                flash('Please provide a valid goal frequency for weekly goal', 'error')
+                return redirect(url_for('auth.dashboard'))
+        elif goal_type == 'monthly':
+            raw_monthly_freq = request.form.get('goal_frequency', type=int)
+            goal.goal_freq = max(raw_monthly_freq // 4, 1)  # Ensures at least 1
+            if not goal_freq:
+                flash('Please provide a valid goal frequency for monthly goal', 'error')
+                return redirect(url_for('habits.get_habits'))
+
+        db.session.commit()
+        flash('Successfully edited habit.', 'success')
         return redirect(url_for('habits.get_habits'))
 
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error editing habit: {e}', 'error')
+        return redirect(url_for('habits.get_habits'))
+
+    
 
 @habits_bp.route("/delete-habit", methods=['POST'])
 @login_required
@@ -229,14 +294,10 @@ def user_progress():
             
             print(f"{habit.habit_name}: {habit.goal.goal_freq} and Current week {logs_this_week}")
             if habit.goal.goal_freq == logs_this_week:
-                print('Goal freq',habit.goal.goal_freq,'Log this week', logs_this_week)
                 feedback.append((f'Congrats! You\'ve fulfilled your commitment to your {habit.habit_name} habit this week','positive'))
             elif habit.goal.goal_freq < logs_this_week:
                 feedback.append((f'Well done! You\'ve exceeded your goal for your {habit.habit_name} habit this week','positive'))
 
-        print("this_month_data:", this_month_data)
-        print("last_month_data:", last_month_data)
-        print("habit_labels_month:", habit_labels_month)
 
         return render_template(
             'user-progress.html',
@@ -254,3 +315,4 @@ def user_progress():
         db.session.rollback()
         flash(f'Error loading progress habit: {e}', 'error')
         return redirect(url_for('auth.dashboard'))
+    

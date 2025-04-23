@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import calendar
-from models import HabitLog
-import pytz
+import pytz,re
+
 
 def validate_password(password1, password2):
     if password1 == password2:
@@ -10,12 +10,31 @@ def validate_password(password1, password2):
         return (False, "Passwords do not match", "error")
     
     if len(password1)  < 6:
-        return (False,"Password must be at least 6 characters long",'warning')
+        return (False,"Password must be at least 6 characters long",'error')
     elif not any(letter.isupper() for letter in password1):
-        return (False,"Password must have at least 1 uppercase character",'warning')
+        return (False,"Password must have at least 1 uppercase character",'error')
     elif not any(char in '~!@#$%^&*(),.?' for char in password1):
-        return (False,"Password must have at least 1 valid special character",'warning')
+        return (False,"Password must have at least 1 valid special character",'error')
     return (True,None,'success')     
+
+def validate_email(email):
+    if len(email) > 254:  # Maximum email length per RFC
+        return (False,'Email is too long','error')
+    else:
+        # Regular expression for basic email validation
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, email):
+            return (False,'Please enter a valid email address','error')
+        else:
+            return (True,None,'success') 
+
+def validate_username(username):
+    if len(username) < 3 or len(username) > 20:
+        return (False,"Username must be between 3 and 20 characters long",'error')
+
+    if not username.isalnum():
+        return (False,"Username can only contain letters and numbers",'error')
+    return (True,None,'success')
 
 
 def get_local_today(timezone_str="America/Chicago"):
@@ -71,4 +90,4 @@ def get_monthly_logs():
     this_month = (start_of_this_month.date(), end_of_this_month.date())
     last_month = (start_of_last_month.date(), end_of_last_month.date())
 
-    return this_month, last_month
+    return last_month, this_month

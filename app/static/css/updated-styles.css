@@ -160,6 +160,11 @@ table.habits-table {
 .habit-cell.completed {
     background-color: #4d9ae2;
 }
+.log-count {
+    text-align: center;
+    font-weight: bold;
+    color: #4A90E2;
+  }
 /*
 .grid {
   display: grid;
@@ -251,6 +256,13 @@ table.habits-table {
   background-color: #4446be;
 }
 
+.text-success {
+    color: rgb(15, 153, 123);
+  }
+  
+  .text-danger {
+    color: rgb(175, 27, 16);
+  }
    /* Modal Styles */
    .modal {
   display: none; 
@@ -670,6 +682,56 @@ body {
     background-color: #e8f4fd;
     border-left: 4px solid var(--primary-color);
 }
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-weight: bold;
+    margin-bottom: 1em;
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 32px;
+  }
+  
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4A90E2; /* Always blue */
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(28px);
+  }
+  
 
 /* Habits Management Styles */
 .habits-main {
@@ -1025,4 +1087,19 @@ body {
 .password-rules li.valid::before {
     content: '✅';
     color: #28a745;
+}
+.undo-btn {
+    background-color: white;
+    color: #4A90E2;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 6px;
+    transition: all 0.2s ease;
+  }
+
+.undo-btn:hover {
+    background-color: #4A90E2;
+    color: white;
 }

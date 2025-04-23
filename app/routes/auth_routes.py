@@ -1,16 +1,22 @@
-from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for
+from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, current_user, logout_user
+from flask_mail import Mail, Message
 from models import User, Habit, TrackedHabit, HabitLog
-from extensions import db, bcrypt
-from support import validate_password, get_week_range, get_current_week_dates, get_local_today
+from extensions import db, bcrypt, mail
+from support import validate_password, get_week_range, get_current_week_dates, get_local_today, validate_email,validate_username
 from datetime import datetime, timezone, date
 
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/", methods=['GET'])
 def index():
-    return redirect(url_for('auth.login'))
+    try:
+        return render_template('login.html')
+    
+    except Exception as e:
+        current_app.logger.error(f"Error occurred: {e}")
+        return "An error occurred", 500
 
 @auth_bp.route("/register",methods=['GET','POST'])
 def register():
@@ -27,6 +33,17 @@ def register():
         if not username or not password1 or not password2 or not email: #check if all fields are filled in form
             flash('All fields are required','warning')
             return redirect(url_for('auth.register'))
+        
+        valid, message, category = validate_username(username) 
+        if not valid and message:
+            flash(message,category)
+            return redirect(url_for('auth.register'))
+
+        valid, message, category = validate_email(email) 
+        if not valid and message:
+            flash(message,category)
+            return redirect(url_for('auth.register'))
+
         
         valid, message, category = validate_password(password1,password2) 
         if not valid and message: #validate password
@@ -47,40 +64,49 @@ def register():
             db.session.commit()
             flash('User account created successfully','success')
             return redirect(url_for('auth.login'))
-            #return jsonify({"message":"User registered successfully"}),201
     except Exception as e:
         db.session.rollback()
         flash(f'Error registering user: {e}','error')
         return redirect(url_for('auth.register'))
-
-@auth_bp.route("/login", methods=['GET','POST'])
+    
+@auth_bp.route("/login", methods=['GET', 'POST'])
 def login():
     try:
         if request.method == 'GET':
-            return render_template('login.html',user=current_user)
-        elif request.method == 'POST':
-            user = User.query.filter_by(username=request.form.get('username')).first()
-            if user and bcrypt.check_password_hash(user.password,request.form.get('password')):
+            return render_template('login.html')
+
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+
+        if user:
+            if bcrypt.check_password_hash(user.password, password):
                 login_user(user)
-                flash(f'User {user.username} successfully logged in','success')
+                flash(f'User {user.username} successfully logged in', 'success')
                 return redirect(url_for('auth.dashboard'))
-            elif not user:
-                flash('No such account exists','error')
-                return redirect(url_for('auth.register'))
             else:
-                print(request.form.get('username'), user.username)
-                flash('Invalid username or password','error')
-                return redirect(url_for('auth.login'))
+                flash('Invalid username or password', 'error')
+        else:
+            flash('No such account exists', 'error')
+            return redirect(url_for('auth.register'))
+
+        return redirect(url_for('auth.login'))
+
     except Exception as e:
         db.session.rollback()
-        flash(f'Error logging in user: {e}','error')
+        flash(f'Error logging in user: {e}', 'error')
         return redirect(url_for('auth.login'))
 
 @auth_bp.route("/user-dashboard",methods=['GET','POST'])
 @login_required
 def dashboard():
     try:
-        week_offset = int(request.args.get('week_offset',0))
+        try:
+            week_offset = int(request.args.get('week_offset', 0))
+        except ValueError:
+            flash('Invalid week offset value.', 'error')
+            return redirect(url_for('auth.dashboard'))
+
         today = get_local_today()
         week_range = get_week_range(week_offset)
         week_dates = get_current_week_dates(week_offset)
@@ -103,17 +129,13 @@ def dashboard():
             ]
 
             logs_by_habit[habit.id] = {
-                log.date_logged.date().isoformat(): log for log in logs_this_week
+                "logs": {log.date_logged.date().isoformat(): log for log in logs_this_week},
+                "count": len(logs_this_week)
             }
             for log in habit.logs:
                 if log.date_logged.date() == today:
                     all_logs_today.append(habit.id)
                     break
-        print(f"Today: {today}")                
-        print(f"Logged today: ",all_logs_today)
-        print("Week range:", get_week_range())
-        print("Dates:", get_current_week_dates())
-        print("Logs by habit",logs_by_habit)
 
         if request.method == 'GET':
             return render_template(
@@ -143,33 +165,17 @@ def logout():
     logout_user()
     return redirect(url_for('auth.login'))
 
+def send_confirmation_email(username, email):
+    subject = "Welcome to Daily Sync"
+    body = f"""
+    Hello {username},
 
+    Thank you for signing up for Daily Sync. We’re excited to have you on board!
+    Let\'s start tracking!
 
+    Best,
+    Daily Sync
+    """
 
-"""
-/register , methods = [POST]
-This handler function will add a new user to the database
-
-/login , methods = [POST]
-This handler function will authenticate an existing user using Flask’s login manager object.
-
-/habits , methods = [GET]
-This handler function will retrieve the user’s tracked habits from the database
-
-/track-habit , methods = [POST]
-This handler function will add a new tracked habit for the user.
-
-/log-habit , methods = [POST]
-This handler function will store whether or not the user completed their tracked habit
-
-/progress , methods = [GET]
-This handler function will retrieve the user’s habit log history for each tracked habit.
-/set-goal , methods = [POST]
-This handler function will allow users to create a new goal for a habit or edit an existing goal.
-
-/remove-habit/<habit_id> , methods = [DEETE]
-This handler function will add a new user to the database
-
-/report , methods = [GET]
-This handler function will generate progress reports for the user over a chosen tie interval. The reports will also include feedback based on the user’s performance with each habit.
-"""
+    msg = Message(subject, recipients=[email], body=body)
+    mail.send(msg)

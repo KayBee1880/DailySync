@@ -50,38 +50,82 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add habit button functionality (placeholder)
     document.addEventListener("DOMContentLoaded", function() {
-        // Function to open the modal
-        function openModal() {
-          document.getElementById('addHabitModal').style.display = 'block';
-        }
-    
-        // Function to close the modal
-        function closeModal() {
-          document.getElementById('addHabitModal').style.display = 'none';
-        }
-    
-        // Add event listeners to all "Add Habit" buttons to open the modal
-        const addHabitButtons = document.querySelectorAll('.add-habit-button, .add-habit-btn');
-        addHabitButtons.forEach(button => {
-          button.addEventListener('click', openModal);
-        });
-    
-        // Close modal when close button is clicked
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        if (closeModalBtn) {
+      // Open and close modal functions
+      function openModal() {
+          document.getElementById('addHabitModal').style.display = 'block';  // Show the modal
+      }
+  
+      function closeModal() {
+          document.getElementById('addHabitModal').style.display = 'none';   // Hide the modal
+      }
+  
+      // Add event listener to the open modal button
+      const openModalBtn = document.querySelector('.add-habit-button');
+      if (openModalBtn) {
+          openModalBtn.addEventListener('click', openModal);
+      }
+  
+      // Add event listener to the close modal button
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      if (closeModalBtn) {
           closeModalBtn.addEventListener('click', closeModal);
+      }
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+      const habitSelect = document.getElementById("habitSelect");
+      const customHabitWrapper = document.getElementById("customHabitFields");
+      const customHabitInput = document.getElementById("customHabitInput");
+      const charCount = document.getElementById("customHabitCharCount");
+
+      const goalTypeSelect = document.getElementById("goalTypeSelect");
+      const goalFrequencyInput = document.getElementById("goalFrequency");
+      const frequencyHint = document.getElementById("frequencyHint");
+
+      // Show custom habit field if "Custom" is selected
+      habitSelect.addEventListener("change", function () {
+        if (habitSelect.value === "Custom") {
+          customHabitWrapper.style.display = "block";
+          customHabitInput.required = true;
+        } else {
+          customHabitWrapper.style.display = "none";
+          customHabitInput.required = false;
         }
-    
-        // Optional: Close modal when clicking outside the modal content
-        window.addEventListener('click', function(event) {
-          const modal = document.getElementById('addHabitModal');
-          if (event.target === modal) {
-            closeModal();
-          }
-        });
-    
-        // Simulate loading the dashboard view by default
-        document.querySelector('.dashboard-view')?.classList.add('active-view');
       });
+
+      // Limit custom habit name to 15 characters
+      customHabitInput.addEventListener("input", function () {
+        const maxLength = 15;
+        const currentLength = customHabitInput.value.length;
+
+        if (currentLength > maxLength) {
+          customHabitInput.value = customHabitInput.value.slice(0, maxLength);
+        }
+
+        charCount.textContent = `${customHabitInput.value.length}/${maxLength}`;
+      });
+
+      // Goal type logic
+      goalTypeSelect.addEventListener("change", function () {
+        const type = goalTypeSelect.value;
+
+        if (type === "daily") {
+          goalFrequencyInput.style.display = "none";
+          goalFrequencyInput.required = false;
+          frequencyHint.textContent = "No frequency needed for daily habits.";
+        } else {
+          goalFrequencyInput.style.display = "inline-block";
+          goalFrequencyInput.required = true;
+
+          if (type === "weekly") {
+            goalFrequencyInput.min = 1;
+            goalFrequencyInput.max = 7;
+            frequencyHint.textContent = "Enter a number from 1 to 7 (times per week)";
+          } else if (type === "monthly") {
+            goalFrequencyInput.min = 1;
+            goalFrequencyInput.max = 28;
+            frequencyHint.textContent = "Enter a number from 1 to 28 (times per month)";
+          }
+        }
+      });
+    });

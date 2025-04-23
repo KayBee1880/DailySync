@@ -57,18 +57,16 @@
                         <td><div class="habit-label">{{ habit.habit_name }}</div></td>
                         {% for date in week_dates %}
                           {% set date_str = date.date().isoformat() %}
-                          {% set completed = date_str in logs_by_habit[habit.id] %} 
+                          {% set completed = date_str in logs_by_habit[habit.id].logs %} 
                             <td>
                               <div class="habit-cell {% if completed %}completed{% endif %}"></div>
                             </td>
                         {% endfor %}
-                        <!--
-                        {% for date in week_dates %}
-                          {% set date_str = date.date().strftime('%Y-%m-%d') %}
-                          <td>
-                              <div class="habit-cell {% if date_str in logs_by_habit[habit.id] %}completed{% endif %}"></div>
-                          </td>
-                        {% endfor %}-->
+                        <td>
+                          <div class="log-count">
+                            {{ logs_by_habit[habit.id].count }}/{{ habit.goal.goal_freq }}
+                          </div>
+                        </td>
                     </tr>
                     {% endfor %}
               {% endif %}
@@ -132,6 +130,10 @@
                 {% endif %}
               </div>
               <p>✔️ Completed</p>
+              <form method="POST" action="{{ url_for('habits.undo_habit') }}">
+                <input type="hidden" name="habit_id" value="{{ habit.id }}">
+                <button type="submit" class="undo-btn">Undo</button>
+              </form>
             </div>
         {% else %}
             <div class="habit-card">

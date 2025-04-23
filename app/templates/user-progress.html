@@ -27,38 +27,43 @@
     <div class="main-content">
       <div class="header">{{ user.username }}'s Progress</div>
           
-          <div style="text-align: center; margin-bottom: 1em;">
-            <label for="viewSelector">View:</label>
-            <select id="viewSelector">
-              <option value="week">This Week vs Last Week</option>
-              <option value="month">This Month vs Last Month</option>
-            </select>
-          </div>
-          <div style="max-width: 700px; margin: 0 auto;">
-            <canvas id="habitChart" width="600" height="400"></canvas>
-          </div>
-
+      <div style="text-align: center; margin-bottom: 1em;">
+        <div class="toggle-switch">
+          <span>Week</span>
+          <label class="switch">
+            <input type="checkbox" id="viewSelector">
+            <span class="slider"></span>
+          </label>
+          <span>Month</span>
         </div>
+      </div>
+      <div style="max-width: 700px; margin: 0 auto;">
+        <canvas id="habitChart" width="600" height="400"></canvas>
+      </div>
+
+    </div>
     <br>
 
     <div class="today-panel">
-      <h3>Feedback</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Feedback</h3>
+
+      </div>
       {% if comments %}
         {% for comment in comments %}
-
-            <div class="habit-card">
-              <div class="habit-header">
-                <p>{{ comment[0] }}
-                  {% if comment[1] == 'positive' %} 🟢{% endif %}
-                  {% if comment[1] == 'negative' %} 🔴{% endif %}
-                </p>
-              </div>
+          <div class="habit-card">
+            <div class="habit-header">
+              <p class="{% if comment[1] == 'positive' %}text-success{% endif %}
+                       {% if comment[1] == 'negative' %}text-danger{% endif %}">
+                {{ comment[0] }}
+              </p>
             </div>
+          </div>
         {% endfor %}
       {% else %}
         <p>No Feedback Yet</p>
       {% endif %}
-    </div> 
+    </div>
     <script>
       const ctx = document.getElementById('habitChart').getContext('2d');
     
@@ -108,7 +113,7 @@
       });
     
       document.getElementById('viewSelector').addEventListener('change', function () {
-        const view = this.value;
+        const view = this.checked ? 'month' : 'week';
     
         if (view === 'month') {
           habitChart.data.labels = monthlyLabels;
@@ -128,6 +133,7 @@
     
         habitChart.update();
       });
+    
     </script>
   </body>
 {% endblock %}

@@ -25,25 +25,31 @@
                 <div class="habits-list-container">
                 {% for habit in habits %}
 
-                        <div class="habit-item">
-                            <span>{{ habit.habit_name }}</span>
-                            {% if habit.streak <= 2 %}
-                                <span class="streak">{{ habit.streak }}<i class="fas fa-arrow-down"></i></span>
-                            {% else %}
-                                <span class="streak">{{ habit.streak }} 🔥<i class="fas fa-arrow-down"></i></span>
-                            {% endif %}
-                            <button class="edit-habit-btn"
-                                data-habit-id="{{ habit.id }}"
-                                data-goal-type="{{ habit.goal.goal_type }}"
-                                data-goal-freq="{{ habit.goal.goal_freq }}">
-                                ✏️ Edit
-                            </button>
-
-                            <form method="POST" action="{{ url_for('habits.delete_habit') }}" class="delete-form" style="display:inline">
-                              <input type="hidden"  name="habit_id" value="{{ habit.id }}">
-                              <button type="submit" onclick="return confirm('Are you sure you want to delete this habit?')">🗑️</button>
-                            </form>
-                        </div>
+                  <div class="habit-item" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="flex: 1;">{{ habit.habit_name }}</span>
+                
+                    <span class="streak" style="flex: 1; text-align: center;">
+                      {% if habit.streak <= 2 %}
+                        {{ habit.streak }}<i class="fas fa-arrow-down"></i>
+                      {% else %}
+                        {{ habit.streak }} 🔥<i class="fas fa-arrow-down"></i>
+                      {% endif %}
+                    </span>
+                
+                    <div style="flex: 1; text-align: right;">
+                        <button class="edit-habit-btn"
+                            data-habit-id="{{ habit.id }}"
+                            data-goal-type="{{ habit.goal.goal_type }}"
+                            data-goal-freq="{{ habit.goal.goal_freq }}">
+                            ✏️ Edit
+                        </button>
+                
+                        <form method="POST" action="{{ url_for('habits.delete_habit') }}" class="delete-form" style="display:inline">
+                            <input type="hidden" name="habit_id" value="{{ habit.id }}">
+                            <button type="submit" onclick="return confirm('Are you sure you want to delete this habit?')">🗑️</button>
+                        </form>
+                    </div>
+              </div>
                 {% endfor %}
                 </div>
             {% else %}
@@ -56,7 +62,7 @@
     <!-- Edit Habit Modal -->
   <div id="editHabitModal" class="modal">
     <div class="modal-content">
-      <span class="close-btn" id="closeModalBtn">&times;</span>
+      <span class="close-btn" id="closeEditModalBtn">&times;</span>
       <h2>Edit Habit</h2>
       <form id="editHabitForm" method="POST" action="{{ url_for('habits.edit_habit') }}">
             <input type="hidden" id="editHabitId" name="habit_id">
@@ -81,8 +87,8 @@
 
 
 
-  <!-- Add Habit Modal -->
-  <div id="addHabitModal" class="modal">
+   <!-- Add Habit Modal -->
+   <div id="addHabitModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" id="closeModalBtn">&times;</span>
       <h2>Add Habit</h2>
@@ -94,50 +100,113 @@
             <option value="{{ habit_option.name }}">{{ habit_option.name }}</option>
           {% endfor %}
         </select>
+        <div id="customHabitFields" style="display: none;">
+          <label for="custom_name">Custom Habit Name:</label>
+          <input type="text" id="customHabitInput" name="custom_name" maxlength="15" placeholder="Enter custom habit name">
+          <small id="customHabitCharCount">0/15</small><br>
+          <label for="custom_description">Description:</label>
+          <textarea id="custom_description" name="custom_description" rows="2" maxlength="40" placeholder="Describe the habit..."></textarea>
+        </div>
         <br>
         <label for="goalTypeSelect">Select Goal Type:</label>
         <select id="goalTypeSelect" name="goal_type" required>
-          <option value="" disabled selected>Select a Goal Type</option><br>
-          <option value="Streak">daily</option>
-          <option value="Frequency">weekly</option>
-          <option value="Duration">monthly</option>
+          <option value="Frequency" disabled selected>Select a Goal Type</option><br>
+          <option value="daily">daily</option>
+          <option value="weekly">weekly</option>
+          <option value="monthly">monthly</option>
         </select>
         <br>
         <label for="goalFrequency">Goal Frequency:</label>
-        <input type="number" id="goalFrequency" name="goal_frequency" required placeholder="Enter frequency (e.g., 3 times/week)">
-        
+        <input type="number" id="goalFrequency" name="goal_frequency" placeholder="e.g., 3 times/week">
+        <small id="frequencyHint" style="color: #555;"></small>
         <button type="submit">Save Habit</button>
       </form>
     </div>
   </div>
 
-
 <script src="{{url_for('static', filename='js/auth.js') }}"></script>
 <script src="{{url_for('static', filename='js/script.js') }}"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // Open and close modal functions
-      function openModal() {
-          document.getElementById('addHabitModal').style.display = 'block';  // Show the modal
-      }
-  
-      function closeModal() {
-          document.getElementById('addHabitModal').style.display = 'none';   // Hide the modal
-      }
-  
-      // Add event listener to the open modal button
-      const openModalBtn = document.querySelector('.add-habit-button');
-      if (openModalBtn) {
-          openModalBtn.addEventListener('click', openModal);
-      }
-  
-      // Add event listener to the close modal button
-      const closeModalBtn = document.getElementById('closeModalBtn');
-      if (closeModalBtn) {
-          closeModalBtn.addEventListener('click', closeModal);
-      }
-    });
+document.addEventListener("DOMContentLoaded", function() {
+        // Open and close modal functions
+        function openModal() {
+            document.getElementById('addHabitModal').style.display = 'block';  // Show the modal
+        }
+    
+        function closeModal() {
+            document.getElementById('addHabitModal').style.display = 'none';   // Hide the modal
+        }
+    
+        // Add event listener to the open modal button
+        const openModalBtn = document.querySelector('.add-habit-button');
+        if (openModalBtn) {
+            openModalBtn.addEventListener('click', openModal);
+        }
+    
+        // Add event listener to the close modal button
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        const habitSelect = document.getElementById("habitSelect");
+        const customHabitWrapper = document.getElementById("customHabitFields");
+        const customHabitInput = document.getElementById("customHabitInput");
+        const charCount = document.getElementById("customHabitCharCount");
+
+        const goalTypeSelect = document.getElementById("goalTypeSelect");
+        const goalFrequencyInput = document.getElementById("goalFrequency");
+        const frequencyHint = document.getElementById("frequencyHint");
+
+        // Show custom habit field if "Custom" is selected
+        habitSelect.addEventListener("change", function () {
+          if (habitSelect.value === "Custom") {
+            customHabitWrapper.style.display = "block";
+            customHabitInput.required = true;
+          } else {
+            customHabitWrapper.style.display = "none";
+            customHabitInput.required = false;
+          }
+        });
+
+        // Limit custom habit name to 15 characters
+        customHabitInput.addEventListener("input", function () {
+          const maxLength = 15;
+          const currentLength = customHabitInput.value.length;
+
+          if (currentLength > maxLength) {
+            customHabitInput.value = customHabitInput.value.slice(0, maxLength);
+          }
+
+          charCount.textContent = `${customHabitInput.value.length}/${maxLength}`;
+        });
+
+        // Goal type logic
+        goalTypeSelect.addEventListener("change", function () {
+          const type = goalTypeSelect.value;
+
+          if (type === "daily") {
+            goalFrequencyInput.style.display = "none";
+            goalFrequencyInput.required = false;
+            frequencyHint.textContent = "No frequency needed for daily habits.";
+          } else {
+            goalFrequencyInput.style.display = "inline-block";
+            goalFrequencyInput.required = true;
+
+            if (type === "weekly") {
+              goalFrequencyInput.min = 1;
+              goalFrequencyInput.max = 7;
+              frequencyHint.textContent = "Enter a number from 1 to 7 (times per week)";
+            } else if (type === "monthly") {
+              goalFrequencyInput.min = 1;
+              goalFrequencyInput.max = 28;
+              frequencyHint.textContent = "Enter a number from 1 to 28 (times per month)";
+            }
+          }
+        });
+      });
     document.addEventListener("DOMContentLoaded", function() {
   // Open and close Edit Habit modal
   function openEditModal(habitId, goalType, goalFrequency) {
@@ -156,13 +225,27 @@
   }
 
   function toggleEditFrequency(goalType) {
-    const wrapper = document.getElementById('editGoalFrequencyWrapper');
-    if (goalType === 'Streak') {
-      wrapper.style.display = 'none';
-    } else {
-      wrapper.style.display = 'block';
+  const wrapper = document.getElementById('editGoalFrequencyWrapper');
+  const input = document.getElementById('editGoalFrequency');
+
+  if (goalType === 'daily') {
+    wrapper.style.display = 'none';
+    input.required = false;
+  } else {
+    wrapper.style.display = 'block';
+    input.required = true;
+
+    if (goalType === 'weekly') {
+      input.min = 1;
+      input.max = 7;
+      input.placeholder = 'Enter frequency (1–7 times/week)';
+    } else if (goalType === 'monthly') {
+      input.min = 1;
+      input.max = 28;
+      input.placeholder = 'Enter frequency (1–28 times/month)';
     }
   }
+}
 
   // Open modal when clicking edit buttons
   document.querySelectorAll('.edit-habit-btn').forEach(btn => {
@@ -191,5 +274,6 @@
     }
   });
 });
+
   </script>
 {% endblock %}

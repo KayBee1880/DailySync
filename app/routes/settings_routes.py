@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, render_template, flash, redirect,
 from flask_login import login_required, current_user, logout_user
 from models import User, TrackedHabit, HabitLog
 from extensions import db, bcrypt
-from support import validate_password
+from support import validate_password, validate_email, validate_username
 
 settings_bp = Blueprint("settings", __name__)
 
@@ -55,6 +55,11 @@ def update_username():
         if not new_username:
             flash('Fill both fields','warning')
             return redirect(request.url)
+        
+        valid, message, category = validate_username(new_username) 
+        if not valid and message:
+            flash(message,category)
+            return redirect(url_for('settings.user_settings'))
 
         #check if same username is entered and if username is taken
         if new_username == current_user.username:
@@ -87,6 +92,10 @@ def update_email():
         if not new_email:
             flash('Fill the field','warning')
             return redirect(request.url)
+        valid, message, category = validate_email(email) 
+        if not valid and message:
+            flash(message,category)
+            return redirect(url_for('auth.register'))
 
         # Check if new email is already taken (by someone else)
         if new_email != current_user.email:
