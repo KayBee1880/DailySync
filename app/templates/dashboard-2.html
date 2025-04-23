@@ -62,6 +62,13 @@
                               <div class="habit-cell {% if completed %}completed{% endif %}"></div>
                             </td>
                         {% endfor %}
+                        <!--
+                        {% for date in week_dates %}
+                          {% set date_str = date.date().strftime('%Y-%m-%d') %}
+                          <td>
+                              <div class="habit-cell {% if date_str in logs_by_habit[habit.id] %}completed{% endif %}"></div>
+                          </td>
+                        {% endfor %}-->
                     </tr>
                     {% endfor %}
               {% endif %}
@@ -72,7 +79,7 @@
 
         </div>
       
-  <!-- Modal -->
+  <!-- Add Habit Modal -->
   <div id="addHabitModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" id="closeModalBtn">&times;</span>
@@ -85,18 +92,25 @@
             <option value="{{ habit_option.name }}">{{ habit_option.name }}</option>
           {% endfor %}
         </select>
+        <div id="customHabitFields" style="display: none;">
+          <label for="custom_name">Custom Habit Name:</label>
+          <input type="text" id="customHabitInput" name="custom_name" maxlength="15" placeholder="Enter custom habit name">
+          <small id="customHabitCharCount">0/15</small><br>
+          <label for="custom_description">Description:</label>
+          <textarea id="custom_description" name="custom_description" rows="2" maxlength="40" placeholder="Describe the habit..."></textarea>
+        </div>
         <br>
         <label for="goalTypeSelect">Select Goal Type:</label>
         <select id="goalTypeSelect" name="goal_type" required>
-          <option value="" disabled selected>Select a Goal Type</option><br>
-          <option value="Streak">daily</option>
-          <option value="Frequency">weekly</option>
-          <option value="Duration">monthly</option>
+          <option value="Frequency" disabled selected>Select a Goal Type</option><br>
+          <option value="daily">daily</option>
+          <option value="weekly">weekly</option>
+          <option value="monthly">monthly</option>
         </select>
         <br>
         <label for="goalFrequency">Goal Frequency:</label>
-        <input type="number" id="goalFrequency" name="goal_frequency" required placeholder="Enter frequency (e.g., 3 times/week)">
-        
+        <input type="number" id="goalFrequency" name="goal_frequency" placeholder="e.g., 3 times/week">
+        <small id="frequencyHint" style="color: #555;"></small>
         <button type="submit">Save Habit</button>
       </form>
     </div>
@@ -153,6 +167,63 @@
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', closeModal);
         }
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        const habitSelect = document.getElementById("habitSelect");
+        const customHabitWrapper = document.getElementById("customHabitFields");
+        const customHabitInput = document.getElementById("customHabitInput");
+        const charCount = document.getElementById("customHabitCharCount");
+
+        const goalTypeSelect = document.getElementById("goalTypeSelect");
+        const goalFrequencyInput = document.getElementById("goalFrequency");
+        const frequencyHint = document.getElementById("frequencyHint");
+
+        // Show custom habit field if "Custom" is selected
+        habitSelect.addEventListener("change", function () {
+          if (habitSelect.value === "Custom") {
+            customHabitWrapper.style.display = "block";
+            customHabitInput.required = true;
+          } else {
+            customHabitWrapper.style.display = "none";
+            customHabitInput.required = false;
+          }
+        });
+
+        // Limit custom habit name to 15 characters
+        customHabitInput.addEventListener("input", function () {
+          const maxLength = 15;
+          const currentLength = customHabitInput.value.length;
+
+          if (currentLength > maxLength) {
+            customHabitInput.value = customHabitInput.value.slice(0, maxLength);
+          }
+
+          charCount.textContent = `${customHabitInput.value.length}/${maxLength}`;
+        });
+
+        // Goal type logic
+        goalTypeSelect.addEventListener("change", function () {
+          const type = goalTypeSelect.value;
+
+          if (type === "daily") {
+            goalFrequencyInput.style.display = "none";
+            goalFrequencyInput.required = false;
+            frequencyHint.textContent = "No frequency needed for daily habits.";
+          } else {
+            goalFrequencyInput.style.display = "inline-block";
+            goalFrequencyInput.required = true;
+
+            if (type === "weekly") {
+              goalFrequencyInput.min = 1;
+              goalFrequencyInput.max = 7;
+              frequencyHint.textContent = "Enter a number from 1 to 7 (times per week)";
+            } else if (type === "monthly") {
+              goalFrequencyInput.min = 1;
+              goalFrequencyInput.max = 28;
+              frequencyHint.textContent = "Enter a number from 1 to 28 (times per month)";
+            }
+          }
+        });
       });
     </script>
     

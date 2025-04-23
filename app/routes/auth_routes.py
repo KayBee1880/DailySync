@@ -126,7 +126,8 @@ def dashboard():
                 week_offset=week_offset,
                 logged_today = all_logs_today,
                 week_dates=week_dates,
-                logs_by_habit = logs_by_habit
+                logs_by_habit = logs_by_habit,
+                num_of_logs = len(logs_this_week),
                 )
         elif request.method == 'POST':
                 return redirect(url_for('auth.dashboard'))

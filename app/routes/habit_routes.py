@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from models import Habit, TrackedHabit, HabitLog, Goal
 from extensions import db
 from datetime import datetime, timezone
-from support import get_weekly_logs
+from support import get_weekly_logs, get_monthly_logs
 
 habits_bp = Blueprint('habits', __name__)
 
@@ -16,31 +16,67 @@ def add_habit():
             return render_template('dashboard-2.html')
 
         habit_name = request.form.get('habit')
-        goal_freq = request.form.get('goal_frequency')
         goal_type = request.form.get('goal_type')
         
-        habit = Habit.query.filter_by(name=habit_name).first()
-        if not habit:
-            flash('Habit does not exist', 'error')
-            return redirect(url_for('auth.dashboard'))
+        if habit_name != 'Custom':
+            habit = Habit.query.filter_by(name=habit_name).first()
 
-        new_tracked_habit = TrackedHabit(user_id=current_user.id, habit_name=habit_name, habit_id=habit.id)
+            if not habit:
+                flash('Habit does not exist', 'error')
+                return redirect(url_for('auth.dashboard'))
+            
+
+            if TrackedHabit.query.filter_by(habit_id=habit.id).first():
+                flash('This habit is already being tracked', 'error')
+                return redirect(url_for('auth.dashboard'))
+                
+            new_tracked_habit = TrackedHabit(user_id=current_user.id, habit_name=habit_name, habit_id=habit.id)
+
+        elif habit_name == 'Custom':
+            custom_name = request.form.get("custom_name")
+            custom_description = request.form.get("custom_description")
+
+            if not custom_name or len(custom_name.strip()) == 0:
+                flash('Please provide a valid name for the custom habit.', 'error')
+                return redirect(url_for('auth.dashboard'))
+            
+            if Habit.query.filter_by(name=custom_name).first():
+                flash('A predefined habit by this name is already provided', 'error')
+                return redirect(url_for('auth.dashboard'))   
+            
+            if TrackedHabit.query.filter_by(habit_name=custom_name).first():
+                flash('A custom habit by this name is already being tracked', 'error')
+                return redirect(url_for('auth.dashboard'))
+            
+            custom_habit = Habit(name=custom_name,category='Custom',description=custom_description)  # assuming you have an is_custom field; optional
+            db.session.add(custom_habit)
+            db.session.flush() 
+  
+
+            new_tracked_habit = TrackedHabit(user_id=current_user.id, habit_name=custom_name, habit_id=custom_habit.id)
+
         db.session.add(new_tracked_habit)
         db.session.commit()
-        #how many times a week should they log a habit
         if goal_type == 'daily':
-            goal_freq = 7
+            goal_freq = 7  # Daily goal is always 7 (one for each day of the week)
         elif goal_type == 'weekly':
-            goal_freq = goal_freq
+            goal_freq = request.form.get('goal_frequency', type=int)
+            if not goal_freq:
+                flash('Please provide a valid goal frequency for weekly goal', 'error')
+                return redirect(url_for('auth.dashboard'))
         elif goal_type == 'monthly':
-            goal_freq = goal_freq // 4
+            goal_freq = request.form.get('goal_frequency', type=int) // 4
+            if not goal_freq:
+                flash('Please provide a valid goal frequency for monthly goal', 'error')
+                return redirect(url_for('auth.dashboard'))
 
         new_goal = Goal(user_id=current_user.id, tracked_habit_id=new_tracked_habit.id,
                         goal_freq=goal_freq, goal_type=goal_type)
+        
         print('New goal',new_goal)
         db.session.add(new_goal)
         db.session.commit()
-
+        flash('Habit added successfully','success')
         return redirect(url_for('auth.dashboard'))
 
     except Exception as e:
@@ -136,15 +172,19 @@ def delete_habit():
 @login_required
 def user_progress():
     try:
-        feedback = [("Feedback 1","negative"),("Feedback 2","negative")]
+        feedback = []
         habit_labels = []
+        habit_labels_month = []
         last_week_data = []
         current_week_data = []
+        last_month_data = []
+        this_month_data = []
         for habit in current_user.tracked_habits:
             print(habit.habit_name)
             print(habit.goal)
 
             current_week, last_week = get_weekly_logs()
+            last_month, this_month = get_monthly_logs()
             logs_this_week =  HabitLog.query.filter(
                     HabitLog.tracked_habit_id == habit.id,
                     db.func.date(HabitLog.date_logged).between(current_week[0], current_week[1])
@@ -155,9 +195,24 @@ def user_progress():
                     db.func.date(HabitLog.date_logged).between(last_week[0], last_week[1])
                 ).count()
             
+            logs_this_month = HabitLog.query.filter(
+                HabitLog.tracked_habit_id == habit.id,
+                db.func.date(HabitLog.date_logged).between(this_month[0], this_month[1])
+            ).count()
+
+            logs_last_month = HabitLog.query.filter(
+                HabitLog.tracked_habit_id == habit.id,
+                db.func.date(HabitLog.date_logged).between(last_month[0], last_month[1])
+            ).count()
+            
             last_week_data.append(logs_last_week)
             current_week_data.append(logs_this_week)
+            last_month_data.append(logs_last_month)
+            this_month_data.append(logs_this_month)
             habit_labels.append(habit.habit_name)
+            habit_labels_month.append(habit.habit_name)
+
+
             if logs_last_week == 0 and logs_this_week > 0:
                 percent_change = 100
             elif logs_last_week == 0 and logs_this_week == 0:
@@ -179,14 +234,21 @@ def user_progress():
             elif habit.goal.goal_freq < logs_this_week:
                 feedback.append((f'Well done! You\'ve exceeded your goal for your {habit.habit_name} habit this week','positive'))
 
+        print("this_month_data:", this_month_data)
+        print("last_month_data:", last_month_data)
+        print("habit_labels_month:", habit_labels_month)
+
         return render_template(
             'user-progress.html',
             comments = feedback,
             user=current_user,
             habits = current_user.tracked_habits,
             habit_labels=habit_labels,
+            habit_labels_month=habit_labels_month,
             last_week_data=last_week_data,
-            current_week_data=current_week_data
+            current_week_data=current_week_data,
+            last_month_data=last_month_data,
+            this_month_data=this_month_data,
             )
     except Exception as e:
         db.session.rollback()
