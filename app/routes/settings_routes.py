@@ -92,7 +92,7 @@ def update_email():
         if not new_email:
             flash('Fill the field','warning')
             return redirect(request.url)
-        valid, message, category = validate_email(email) 
+        valid, message, category = validate_email(new_email) 
         if not valid and message:
             flash(message,category)
             return redirect(url_for('auth.register'))
