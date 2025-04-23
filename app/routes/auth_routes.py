@@ -115,6 +115,7 @@ def dashboard():
 
         all_logs_today = [] #what habits were ogged today for today panel
         logs_by_habit = {} #what date of the week was a habit logged
+        logs_this_week = []
 
         for habit in user.tracked_habits:
             #get all user logs for this week
