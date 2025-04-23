@@ -26,7 +26,7 @@ def add_habit():
                 return redirect(url_for('auth.dashboard'))
             
 
-            if TrackedHabit.query.filter_by(habit_id=habit.id).first():
+            if TrackedHabit.query.filter_by(habit_id=habit.id, user_id=current_user.id).first():
                 flash('This habit is already being tracked', 'error')
                 return redirect(url_for('auth.dashboard'))
                 
@@ -45,7 +45,7 @@ def add_habit():
                 flash('A predefined habit by this name is already provided', 'error')
                 return redirect(url_for('auth.dashboard'))   
             
-            if TrackedHabit.query.filter_by(habit_name=custom_name).first():
+            if TrackedHabit.query.filter_by(habit_name=custom_name, user_id=current_user.id).first():
                 flash('A custom habit by this name is already being tracked', 'error')
                 return redirect(url_for('auth.dashboard'))
             

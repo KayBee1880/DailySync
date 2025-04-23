@@ -145,7 +145,7 @@ def reset_progress():
 @login_required
 def delete_account():
     try:
-        for habit in user.tracked_habits:
+        for habit in current_user.tracked_habits:
             db.session.delete(habit)
 
         db.session.delete(current_user)
