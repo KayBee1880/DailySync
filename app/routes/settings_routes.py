@@ -95,7 +95,7 @@ def update_email():
         valid, message, category = validate_email(new_email) 
         if not valid and message:
             flash(message,category)
-            return redirect(url_for('auth.register'))
+            return redirect(url_for('settings.user_settings'))
 
         # Check if new email is already taken (by someone else)
         if new_email != current_user.email:
