@@ -1,5 +1,4 @@
 from flask import Flask, Blueprint, current_app
-from dotenv import load_dotenv
 import os
 from extensions import db, migrate, login_manager, bcrypt, mail
 from routes.auth_routes import auth_bp
@@ -10,21 +9,19 @@ from seeds_data import run_all_seeds
 from sqlalchemy import text
 import logging
 from logging.handlers import RotatingFileHandler
+from config import SECRET_KEY, DATABASE_URL, MAIL_USERNAME, MAIL_PASSWORD
 
 '''This is where we will create the actual app and define its configurations,
 also register blueprints for routes we define in the routes folder
 '''
-
-#load environment variables
-load_dotenv()
 
 
 #create app + fetch configurations from config file
 app = Flask(__name__,template_folder='templates',static_folder='static',static_url_path='/')
 
 #app configurations
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://habit_tracker_user:T3%40Mdatabase%21@127.0.0.1:5555/teamprojectdb?options=-c%20search_path=new_schema'
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'connect_args': {'options': '-csearch_path=public'}
@@ -35,9 +32,9 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORRT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'tereikfaulknor2022@gmail.com'
-app.config['MAIL_PASSWORD'] = 'wsxb halm dxsq axdo'
-app.config['MAIL_DEFAULT_SENDER'] = ('Daily Sync','tereikfaulknor2022@gmail.com')
+app.config['MAIL_USERNAME'] = MAIL_USERNAME
+app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
+app.config['MAIL_DEFAULT_SENDER'] = ('Daily Sync',MAIL_USERNAME)
 
 #initialize entension objects with app
 db.init_app(app)

@@ -959,6 +959,14 @@ body {
     background-image: url('../assets/icons/settings-icon.svg');
   }
 
+body.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f7f7f7; /* You can customize the background color */
+}
 
 /* Smaller container */
 .auth-container {
