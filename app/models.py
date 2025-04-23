@@ -15,7 +15,7 @@ class User(db.Model, UserMixin):
     date_joined = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
-    tracked_habits = db.relationship('TrackedHabit', backref='user',lazy=True)
+    tracked_habits = db.relationship('TrackedHabit', backref='user',lazy=True, cascade="all, delete", passive_deletes=True)
     goals = db.relationship('Goal',backref='user',lazy=True)
 
     def __repr__(self):
