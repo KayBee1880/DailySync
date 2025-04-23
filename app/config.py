@@ -1,5 +1,5 @@
 SECRET_KEY = 'super_secret_key'
 #DATABASE_URL = 'postgresql://habit_tracker_user:T3%40Mdatabase%21@127.0.0.1:5555/teamprojectdb?options=-c%20search_path=new_schema'
-DATABSE_URL = 'postgresql://lifestyle_db_zuxl_user:P9fLB8ARamoC6gkAWmvZyLRr727Bm2my@dpg-d04cdip5pdvs73c7u0m0-a/lifestyle_db_zuxl'
+DATABASE_URL = 'postgresql://lifestyle_db_zuxl_user:P9fLB8ARamoC6gkAWmvZyLRr727Bm2my@dpg-d04cdip5pdvs73c7u0m0-a/lifestyle_db_zuxl'
 MAIL_USERNAME = 'tereikfaulknor2022@gmail.com'
 MAIL_PASSWORD = 'wsxb halm dxsq axdo'
