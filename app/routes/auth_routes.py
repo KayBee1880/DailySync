@@ -62,7 +62,7 @@ def register():
             new_user = User(id=id,username=username,password = hashed_password, email=email)
             db.session.add(new_user)
             db.session.commit()
-            send_confirmation_email(username,email)
+            #send_confirmation_email(username,email)
             flash('User account created successfully','success')
             return redirect(url_for('auth.login'))
     except Exception as e:
