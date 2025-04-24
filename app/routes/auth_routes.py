@@ -168,6 +168,8 @@ def logout():
     return redirect(url_for('auth.login'))
 
 def send_confirmation_email(username, email):
+    username = username
+    email = email
     subject = "Welcome to Daily Sync"
     body = f"""
     Hello {username},
