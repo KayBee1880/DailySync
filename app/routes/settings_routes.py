@@ -145,9 +145,12 @@ def reset_progress():
 @login_required
 def delete_account():
     try:
-        for habit in current_user.tracked_habits:
-            db.session.delete(habit)
-
+        user_habits = TrackedHabit.query.filter_by(user_id=current_user.id).all()
+        if user_habits:
+            for habit in user_habits:
+                HabitLog.query.filter_by(tracked_habit_id=habit.id).delete()
+                db.session.delete(habit)
+                
         db.session.delete(current_user)
         db.session.commit()
         flash('account deleted successfully', 'success')
