@@ -1,49 +1,52 @@
-🌟 DailySync
-DailySync is a lifestyle web application built to help users develop healthy habits and maintain consistency. With a clean, dashboard-style interface, users can easily create, track, and manage their daily routines — all from one place.
+# DailySync 🗓️
 
-📌 Features
-📝 Create New Habits
-Add custom habits based on your goals, whether it's exercising, drinking water, or reading daily.
+A web app to help users **create, track, and manage daily habits** with a clean, dashboard-style interface. Stay consistent, visualize progress, and achieve your goals — all from one central dashboard.
 
-📅 Log Your Progress
-Check off habits as you complete them. Stay on track and accountable.
+---
 
-📊 View Progress Insights
-Visualize your streaks and progress over time with engaging charts and metrics.
+## 📌 Features
 
-🧭 Dashboard Design
-All tools and features are accessible from a central dashboard — no page switching required. A comfortable, intuitive user experience is our priority.
+- **Create New Habits**  
+  Add custom habits based on your goals, whether it's exercising, drinking water, or reading daily.
 
-🚀 Getting Started
-Prerequisites
-Node.js and npm
+- **Log Your Progress**  
+  Check off habits as you complete them. Stay on track and accountable.
 
-A web browser (Chrome, Firefox, etc.)
+- **View Progress Insights**  
+  Visualize your streaks and progress over time with engaging charts and metrics.
 
-Installation
-Clone the repository:
+- **Dashboard Design**  
+  All tools and features are accessible from a single dashboard — no page switching required. Intuitive and user-friendly interface.
 
-bash
-Copy code
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js and npm
+- A web browser (Chrome, Firefox, etc.)
+
+### Installation
+1. Clone the repository:
+```bash
 git clone https://github.com/yourusername/dailysync.git
 cd dailysync
-Install dependencies:
-
-bash
-Copy code
+```
+2. Install dependencies:
+```bash
 npm install
-Start the development server:
-
-bash
-Copy code
+```
+3. Start the development server:
+```bash
 npm run dev
-Open in browser:
-
+```
+4. Open in browser:
+```bash
 arduino
-Copy code
 http://localhost:3000
-🛠 Tech Stack
-Frontend: React.js / Next.js (or whatever framework you're using)
+```
+5. 🛠 Tech Stack
+Frontend: React.js / Next.js
 
 Styling: Tailwind CSS / Sass / CSS Modules
 
@@ -53,9 +56,9 @@ Database: MongoDB / PostgreSQL / Firebase (if applicable)
 
 Charts & Visuals: Chart.js / Recharts
 
-📁 Folder Structure
+### 📁 Folder Structure
 java
-Copy code
+```bash
 dailysync/
 ├── public/
 ├── src/
@@ -65,10 +68,11 @@ dailysync/
 │   └── utils/
 ├── package.json
 └── README.md
-📸 Screenshots
+```
+### 📸 Screenshots
 Coming soon...
 
-✨ Future Improvements
+### ✨ Future Improvements
 Mobile responsiveness
 
 Social sharing of streaks
@@ -77,13 +81,11 @@ Habit suggestions based on user preferences
 
 Daily reminders and push notifications
 
-🤝 Contributing
-Contributions are welcome!
-Please fork the repo and submit a pull request, or open an issue for discussion.
+### 🤝 Contributing
+Contributions are welcome! Please fork the repo and submit a pull request, or open an issue for discussion.
 
-📜 License
+### 📜 License
 This project is licensed under the MIT License.
 
-🙌 Acknowledgements
+#### 🙌 Acknowledgements
 Thanks to the open-source community and all contributors who make projects like this possible.
-
